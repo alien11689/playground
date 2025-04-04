@@ -40,15 +40,11 @@ paths:
                 $ref: "#/components/schemas/Task"
 
   /tasks/{taskId}:
+    parameters:
+      - $ref: "#/components/parameters/taskId"
     get:
       summary: Returns a single task
       operationId: GetTask
-      parameters:
-        - in: path
-          name: taskId
-          schema:
-            $ref: "#/components/schemas/TaskId"
-          required: true
       responses:
         200:
           description: Task view
@@ -65,12 +61,6 @@ paths:
     put:
       summary: Returns a single task
       operationId: UpdateTask
-      parameters:
-        - in: path
-          name: taskId
-          schema:
-            $ref: "#/components/schemas/TaskId"
-          required: true
       requestBody:
         content:
           application/json:
@@ -114,6 +104,7 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/TaskId"
+          readonly: true
         summary:
           type: string
         description:
@@ -137,6 +128,7 @@ components:
 
     TaskId:
       type: string
+      format: uuid
 
     TaskStatus:
       type: string
@@ -161,3 +153,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+
+  parameters:
+    taskId:
+      in: path
+      name: taskId
+      schema:
+        $ref: "#/components/schemas/TaskId"
+      required: true
