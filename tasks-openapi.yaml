@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Tasks API
   description: Tasks sample API
-  version: 0.0.1
+  version: 0.0.2
 
 paths:
   /tasks:
@@ -120,10 +120,20 @@ components:
           type: string
         status:
           $ref: "#/components/schemas/TaskStatus"
+        createdAt:
+          type: string
+          format: date-time
+          readonly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readonly: true
       required:
         - id
         - summary
         - status
+        - createdAt
+        - updatedAt
 
     TaskId:
       type: string
