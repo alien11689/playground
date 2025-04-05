@@ -9,6 +9,8 @@ paths:
     get:
       summary: Returns a list of tasks.
       operationId: GetTasks
+      tags:
+        - tasks
       x-spring-paginated: true
       parameters:
         - $ref: "#/components/parameters/pageablePage"
@@ -24,6 +26,8 @@ paths:
     post:
       summary: Adds a new task
       operationId: AddTask
+      tags:
+        - tasks
       requestBody:
         content:
           application/json:
@@ -49,6 +53,8 @@ paths:
     get:
       summary: Returns a task
       operationId: GetTask
+      tags:
+        - tasks
       parameters:
         - $ref: "#/components/parameters/taskId"
       responses:
@@ -63,6 +69,8 @@ paths:
     put:
       summary: Updates a task
       operationId: UpdateTask
+      tags:
+        - tasks
       parameters:
         - $ref: "#/components/parameters/taskId"
       requestBody:
@@ -79,8 +87,10 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
   /tasks/{taskId}/comments:
     get:
-      operationId: GetTaskComments
       summary: Get task comments
+      operationId: GetTaskComments
+      tags:
+        - tasks
       x-spring-paginated: true
       parameters:
         - $ref: "#/components/parameters/taskId"
@@ -96,8 +106,10 @@ paths:
         404:
           $ref: "#/components/responses/TaskNotFound"
     post:
-      operationId: AddTaskComment
       summary: Post a task comment
+      operationId: AddTaskComment
+      tags:
+        - tasks
       parameters:
         - $ref: "#/components/parameters/taskId"
       requestBody:
@@ -124,8 +136,10 @@ paths:
           $ref: "#/components/responses/TaskNotFound"
   /tasks/{taskId}/comments/{commentId}:
     put:
-      operationId: UpdateTaskComment
       summary: Update a task comment
+      operationId: UpdateTaskComment
+      tags:
+        - tasks
       parameters:
         - $ref: "#/components/parameters/taskId"
         - $ref: "#/components/parameters/commentId"
@@ -142,8 +156,10 @@ paths:
         404:
           $ref: "#/components/responses/TaskOrCommentNotFound"
     delete:
-      operationId: DeleteTaskComment
       summary: Delete a task comment
+      operationId: DeleteTaskComment
+      tags:
+        - tasks
       parameters:
         - $ref: "#/components/parameters/taskId"
         - $ref: "#/components/parameters/commentId"
@@ -321,3 +337,7 @@ components:
         minimum: 10
         maximum: 100
       required: false
+
+tags:
+  - name: tasks
+    description: Tasks related operations
