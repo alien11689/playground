@@ -17,7 +17,7 @@
         <beanvalidation-version>2.0.2</beanvalidation-version>
         <httpclient-version>5.2.1</httpclient-version>
         <jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
-        <jackson-version>2.17.1</jackson-version>
+        <jackson-version>2.18.3</jackson-version>
         <jakarta-annotation-version>1.3.5</jakarta-annotation-version>
         <openapi-generator-maven-plugin.version>7.12.0</openapi-generator-maven-plugin.version>
     </properties>
