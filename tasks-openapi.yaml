@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Tasks API
   description: Tasks sample API
-  version: 0.0.2
+  version: 0.0.3
 
 paths:
   /tasks:
@@ -38,12 +38,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Task"
+        400:
+          $ref: "#/components/responses/BadRequest"
 
   /tasks/{taskId}:
     parameters:
       - $ref: "#/components/parameters/taskId"
     get:
-      summary: Returns a single task
+      summary: Returns a task
       operationId: GetTask
       responses:
         200:
@@ -53,13 +55,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Task"
         404:
-          description: Task not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/TaskNotFound"
     put:
-      summary: Returns a single task
+      summary: Updates a task
       operationId: UpdateTask
       requestBody:
         content:
@@ -67,14 +65,76 @@ paths:
             schema:
               $ref: "#/components/schemas/Task"
       responses:
-        202:
+        204:
           description: Task updated
+        400:
+          $ref: "#/components/responses/BadRequest"
         404:
-          description: Task not found
+          $ref: "#/components/responses/TaskNotFound"
+  /tasks/{taskId}/comments:
+    parameters:
+      - $ref: "#/components/parameters/taskId"
+    get:
+      operationId: GetTaskComments
+      summary: Get task comments
+      responses:
+        200:
+          description: Comments list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/GetTaskCommentsResponse"
+        404:
+          $ref: "#/components/responses/TaskNotFound"
+    post:
+      operationId: AddTaskComment
+      summary: Post a task comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddTaskCommentRequest"
+      responses:
+        201:
+          description: Task comment added
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/TaskNotFound"
+  /tasks/{taskId}/comments/{commentId}:
+    put:
+      operationId: UpdateTaskComment
+      summary: Update a task comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comment"
+      responses:
+        204:
+          description: Comment updated
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/TaskOrCommentNotFound"
+    delete:
+      operationId: DeleteTaskComment
+      summary: Delete a task comment
+      responses:
+        204:
+          description: Comment deleted
+        404:
+          $ref: "#/components/responses/TaskOrCommentNotFound"
 
 components:
   schemas:
@@ -146,9 +206,65 @@ components:
       required:
         - message
 
+    GetTaskCommentsResponse:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+      required:
+        - comments
+
+    Comment:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/CommentId"
+          readonly: true
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          readonly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readonly: true
+      required:
+        - id
+        - content
+        - createdAt
+        - updatedAt
+
+    AddTaskCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    CommentId:
+      type: string
+      format: uuid
+
   responses:
-    400:
+    BadRequest:
       description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TaskNotFound:
+      description: Task not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TaskOrCommentNotFound:
+      description: Task or comment not found
       content:
         application/json:
           schema:
