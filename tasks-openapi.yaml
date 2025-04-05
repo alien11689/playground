@@ -42,11 +42,11 @@ paths:
           $ref: "#/components/responses/BadRequest"
 
   /tasks/{taskId}:
-    parameters:
-      - $ref: "#/components/parameters/taskId"
     get:
       summary: Returns a task
       operationId: GetTask
+      parameters:
+        - $ref: "#/components/parameters/taskId"
       responses:
         200:
           description: Task view
@@ -59,6 +59,8 @@ paths:
     put:
       summary: Updates a task
       operationId: UpdateTask
+      parameters:
+        - $ref: "#/components/parameters/taskId"
       requestBody:
         content:
           application/json:
@@ -77,6 +79,8 @@ paths:
     get:
       operationId: GetTaskComments
       summary: Get task comments
+      parameters:
+        - $ref: "#/components/parameters/taskId"
       responses:
         200:
           description: Comments list
@@ -89,6 +93,8 @@ paths:
     post:
       operationId: AddTaskComment
       summary: Post a task comment
+      parameters:
+        - $ref: "#/components/parameters/taskId"
       requestBody:
         content:
           application/json:
@@ -115,6 +121,9 @@ paths:
     put:
       operationId: UpdateTaskComment
       summary: Update a task comment
+      parameters:
+        - $ref: "#/components/parameters/taskId"
+        - $ref: "#/components/parameters/commentId"
       requestBody:
         content:
           application/json:
@@ -130,6 +139,9 @@ paths:
     delete:
       operationId: DeleteTaskComment
       summary: Delete a task comment
+      parameters:
+        - $ref: "#/components/parameters/taskId"
+        - $ref: "#/components/parameters/commentId"
       responses:
         204:
           description: Comment deleted
@@ -164,7 +176,7 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/TaskId"
-          readonly: true
+          readOnly: true
         summary:
           type: string
         description:
@@ -174,11 +186,11 @@ components:
         createdAt:
           type: string
           format: date-time
-          readonly: true
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
-          readonly: true
+          readOnly: true
       required:
         - id
         - summary
@@ -221,17 +233,17 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/CommentId"
-          readonly: true
+          readOnly: true
         content:
           type: string
         createdAt:
           type: string
           format: date-time
-          readonly: true
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
-          readonly: true
+          readOnly: true
       required:
         - id
         - content
@@ -276,4 +288,10 @@ components:
       name: taskId
       schema:
         $ref: "#/components/schemas/TaskId"
+      required: true
+    commentId:
+      in: path
+      name: commentId
+      schema:
+        $ref: "#/components/schemas/CommentId"
       required: true
