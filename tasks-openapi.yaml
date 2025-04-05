@@ -159,11 +159,10 @@ components:
       type: object
       properties:
         summary:
-          type: string
+          $ref: "#/components/schemas/NonEmptyString"
         description:
           type: string
       required:
-        - id
         - summary
 
     GetTasksResponse:
@@ -183,7 +182,7 @@ components:
           $ref: "#/components/schemas/TaskId"
           readOnly: true
         summary:
-          type: string
+          $ref: "#/components/schemas/NonEmptyString"
         description:
           type: string
         status:
@@ -240,7 +239,7 @@ components:
           $ref: "#/components/schemas/CommentId"
           readOnly: true
         content:
-          type: string
+          $ref: "#/components/schemas/NonEmptyString"
         createdAt:
           type: string
           format: date-time
@@ -259,13 +258,18 @@ components:
       type: object
       properties:
         content:
-          type: string
+          $ref: "#/components/schemas/NonEmptyString"
       required:
         - content
 
     CommentId:
       type: string
       format: uuid
+
+    NonEmptyString:
+      type: string
+      minLength: 1
+      pattern: '^(?!\s*$).+'
 
   responses:
     BadRequest:
@@ -306,6 +310,7 @@ components:
       schema:
         type: integer
         format: int32
+        minimum: 0
       required: false
     pageableSize:
       in: query
@@ -313,4 +318,6 @@ components:
       schema:
         type: integer
         format: int32
+        minimum: 10
+        maximum: 100
       required: false
