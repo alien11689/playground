@@ -22,6 +22,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetTasksResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
 
     post:
       summary: Adds a new task
@@ -48,6 +50,8 @@ paths:
                 $ref: "#/components/schemas/Task"
         400:
           $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
 
   /tasks/{taskId}:
     get:
@@ -64,6 +68,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Task"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskNotFound"
     put:
@@ -83,6 +89,8 @@ paths:
           description: Task updated
         400:
           $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskNotFound"
   /tasks/{taskId}/comments:
@@ -103,6 +111,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetTaskCommentsResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskNotFound"
     post:
@@ -132,6 +142,8 @@ paths:
                 $ref: "#/components/schemas/Comment"
         400:
           $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskNotFound"
   /tasks/{taskId}/comments/{commentId}:
@@ -153,6 +165,8 @@ paths:
           description: Comment updated
         400:
           $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskOrCommentNotFound"
     delete:
@@ -166,6 +180,8 @@ paths:
       responses:
         204:
           description: Comment deleted
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
         404:
           $ref: "#/components/responses/TaskOrCommentNotFound"
 
@@ -302,6 +318,12 @@ components:
             $ref: "#/components/schemas/Error"
     TaskOrCommentNotFound:
       description: Task or comment not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnauthorizedInvalidToken:
+      description: Token is invalid
       content:
         application/json:
           schema:
