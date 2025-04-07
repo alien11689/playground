@@ -5,6 +5,24 @@ info:
   version: 0.0.3
 
 paths:
+  /login:
+    post:
+      summary: Log in
+      operationId: Login
+      tags:
+        - auth
+      security:
+        - basicAuth: [ ]
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+
   /tasks:
     get:
       summary: Returns a list of tasks.
@@ -303,6 +321,14 @@ components:
       minLength: 1
       pattern: '^(?!\s*$).+'
 
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          $ref: "#/components/schemas/NonEmptyString"
+      required:
+        - token
+
   responses:
     BadRequest:
       description: Bad request
@@ -365,6 +391,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: "JWT"
+    basicAuth:
+      type: http
+      scheme: basic
 
 security:
   - bearerAuth: [ ]
@@ -372,3 +401,5 @@ security:
 tags:
   - name: tasks
     description: Tasks related operations
+  - name: auth
+    description: Authentication related operations
