@@ -203,6 +203,26 @@ paths:
         404:
           $ref: "#/components/responses/TaskOrCommentNotFound"
 
+  /users:
+    get:
+      summary: Returns a list of users.
+      operationId: GetUsers
+      tags:
+        - users
+      x-spring-paginated: true
+      parameters:
+        - $ref: "#/components/parameters/pageablePage"
+        - $ref: "#/components/parameters/pageableSize"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUsersResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+
 components:
   schemas:
     AddTaskRequest:
@@ -241,16 +261,24 @@ components:
           type: string
           format: date-time
           readOnly: true
+        createdBy:
+          $ref: "#/components/schemas/UserId"
         updatedAt:
           type: string
           format: date-time
           readOnly: true
+        updatedBy:
+          $ref: "#/components/schemas/UserId"
+        assignee:
+          $ref: "#/components/schemas/UserId"
       required:
         - id
         - summary
         - status
         - createdAt
+        - createdBy
         - updatedAt
+        - updatedBy
 
     TaskId:
       type: string
@@ -298,11 +326,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        addedBy:
+          $ref: "#/components/schemas/UserId"
+          readOnly: true
       required:
         - id
         - content
         - createdAt
         - updatedAt
+        - authorId
 
     AddTaskCommentRequest:
       type: object
@@ -328,6 +360,35 @@ components:
           $ref: "#/components/schemas/NonEmptyString"
       required:
         - token
+
+    User:
+      type: object
+      properties:
+        userId:
+          $ref: "#/components/schemas/UserId"
+        username:
+          $ref: "#/components/schemas/NonEmptyString"
+        firstName:
+          $ref: "#/components/schemas/NonEmptyString"
+        lastName:
+          $ref: "#/components/schemas/NonEmptyString"
+      required:
+        - userId
+        - username
+
+    UserId:
+      type: string
+      format: uuid
+
+    GetUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - users
 
   responses:
     BadRequest:
@@ -403,3 +464,5 @@ tags:
     description: Tasks related operations
   - name: auth
     description: Authentication related operations
+  - name: users
+    description: Users management
