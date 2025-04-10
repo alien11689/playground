@@ -34,12 +34,11 @@ class TaskProviderApplicationTests {
 
     @Test
     void shouldAllowGettingTasksOnlyWithToken() throws URISyntaxException {
-        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, Base64.getEncoder().encodeToString("user:password".getBytes())));
-        var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponse.class).getBody();
-        assertNotNull(loginResponse);
-        MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getToken()));
+        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Basic " +Base64.getEncoder().encodeToString("user:password".getBytes())));
+        var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponse.class);
+        assertNotNull(loginResponse.getBody());
+        MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getBody().getToken()));
         var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponse.class);
-        System.out.println(getTasksResponse);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         assertNotNull(getTasksResponse.getBody());
         assertTrue(getTasksResponse.getBody().getTasks().isEmpty());
@@ -49,7 +48,6 @@ class TaskProviderApplicationTests {
     void shouldRejectGettingTasksWithUnknownToken() throws URISyntaxException {
         MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + UUID.randomUUID()));
         var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponse.class);
-        System.out.println(getTasksResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, getTasksResponse.getStatusCode());
     }
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@WebMvcTest(value = {LoginController.class, SecurityConfig.class, LoginEntryPoint.class})
+@WebMvcTest(value = {LoginController.class, SecurityConfig.class, LoginEntryPoint.class, UserDetailsServiceConfig.class, TokenAuthenticationFilter.class})
 class LoginControllerTest {
 
     @Autowired
