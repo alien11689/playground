@@ -258,17 +258,17 @@ components:
         status:
           $ref: "#/components/schemas/TaskStatus"
         createdAt:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
           readOnly: true
         createdBy:
           $ref: "#/components/schemas/UserId"
+          readOnly: true
         updatedAt:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
           readOnly: true
         updatedBy:
           $ref: "#/components/schemas/UserId"
+          readOnly: true
         assignee:
           $ref: "#/components/schemas/UserId"
       required:
@@ -319,12 +319,10 @@ components:
         content:
           $ref: "#/components/schemas/NonEmptyString"
         createdAt:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
           readOnly: true
         updatedAt:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
           readOnly: true
         addedBy:
           $ref: "#/components/schemas/UserId"
@@ -389,6 +387,10 @@ components:
             $ref: "#/components/schemas/User"
       required:
         - users
+
+    DateTime:
+      type: string
+      format: date-time
 
   responses:
     BadRequest:
