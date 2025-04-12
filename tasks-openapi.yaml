@@ -222,6 +222,25 @@ paths:
                 $ref: "#/components/schemas/GetUsersResponse"
         401:
           $ref: "#/components/responses/UnauthorizedInvalidToken"
+    post:
+      summary: Create a user
+      operationId: CreateUser
+      tags:
+        - users
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUser"
+      responses:
+        201:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
 
 components:
   schemas:
@@ -373,6 +392,22 @@ components:
       required:
         - userId
         - username
+        - firstName
+        - lastName
+
+    CreateUser:
+      type: object
+      properties:
+        username:
+          $ref: "#/components/schemas/NonEmptyString"
+        firstName:
+          $ref: "#/components/schemas/NonEmptyString"
+        lastName:
+          $ref: "#/components/schemas/NonEmptyString"
+      required:
+        - username
+        - firstName
+        - lastName
 
     UserId:
       type: string
