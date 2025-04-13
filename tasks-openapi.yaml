@@ -400,6 +400,8 @@ components:
       properties:
         username:
           $ref: "#/components/schemas/NonEmptyString"
+        password:
+          $ref: "#/components/schemas/NonEmptyString"
         firstName:
           $ref: "#/components/schemas/NonEmptyString"
         lastName:
