@@ -1,7 +1,7 @@
 package dpr.playground.taskprovider.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dpr.playground.taskprovider.tasks.model.Error;
+import dpr.playground.taskprovider.tasks.model.ErrorDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -29,7 +29,7 @@ class LoginEntryPoint extends BasicAuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.addHeader("Content-Type", "application/json");
         PrintWriter writer = response.getWriter();
-        var error = new Error("Invalid user or password");
+        var error = new ErrorDTO("Invalid user or password");
         writer.println(objectMapper.writeValueAsString(error));
     }
 

@@ -1,7 +1,7 @@
 package dpr.playground.taskprovider;
 
-import dpr.playground.taskprovider.tasks.model.GetTasksResponse;
-import dpr.playground.taskprovider.tasks.model.LoginResponse;
+import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
+import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,11 +34,11 @@ class TaskProviderApplicationTests {
 
     @Test
     void shouldAllowGettingTasksOnlyWithToken() throws URISyntaxException {
-        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Basic " +Base64.getEncoder().encodeToString("user:password".getBytes())));
-        var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponse.class);
+        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString("user:password".getBytes())));
+        var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponseDTO.class);
         assertNotNull(loginResponse.getBody());
         MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getBody().getToken()));
-        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponse.class);
+        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         assertNotNull(getTasksResponse.getBody());
         assertTrue(getTasksResponse.getBody().getTasks().isEmpty());
@@ -47,7 +47,7 @@ class TaskProviderApplicationTests {
     @Test
     void shouldRejectGettingTasksWithUnknownToken() throws URISyntaxException {
         MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + UUID.randomUUID()));
-        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponse.class);
+        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.UNAUTHORIZED, getTasksResponse.getStatusCode());
     }
 

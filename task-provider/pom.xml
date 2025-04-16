@@ -117,6 +117,7 @@
                             <modelPackage>dpr.playground.taskprovider.tasks.model</modelPackage>
                             <apiPackage>dpr.playground.taskprovider.tasks.api</apiPackage>
                             <invokerPackage>dpr.playground.taskprovider.tasks.invoker</invokerPackage>
+                            <modelNameSuffix>DTO</modelNameSuffix>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
                                 <skipDefaultInterface>true</skipDefaultInterface>
