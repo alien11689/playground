@@ -408,6 +408,7 @@ components:
           $ref: "#/components/schemas/NonEmptyString"
       required:
         - username
+        - password
         - firstName
         - lastName
 
