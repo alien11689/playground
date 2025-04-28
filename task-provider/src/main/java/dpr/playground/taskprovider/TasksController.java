@@ -7,7 +7,6 @@ import dpr.playground.taskprovider.tasks.model.CommentDTO;
 import dpr.playground.taskprovider.tasks.model.GetTaskCommentsResponseDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
 import dpr.playground.taskprovider.tasks.model.TaskDTO;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,12 +35,12 @@ public class TasksController implements TasksApi {
     }
 
     @Override
-    public ResponseEntity<GetTaskCommentsResponseDTO> getTaskComments(UUID taskId, Integer page, Integer size, Pageable pageable) {
+    public ResponseEntity<GetTaskCommentsResponseDTO> getTaskComments(UUID taskId, Integer page, Integer size) {
         throw new RuntimeException("Not implemented");
     }
 
     @Override
-    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size, Pageable pageable) {
+    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size) {
         // TODO finish
         return ResponseEntity.ok(new GetTasksResponseDTO());
     }

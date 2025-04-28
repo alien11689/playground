@@ -29,7 +29,6 @@ paths:
       operationId: GetTasks
       tags:
         - tasks
-      x-spring-paginated: true
       parameters:
         - $ref: "#/components/parameters/pageablePage"
         - $ref: "#/components/parameters/pageableSize"
@@ -117,7 +116,6 @@ paths:
       operationId: GetTaskComments
       tags:
         - tasks
-      x-spring-paginated: true
       parameters:
         - $ref: "#/components/parameters/taskId"
         - $ref: "#/components/parameters/pageablePage"
@@ -209,7 +207,6 @@ paths:
       operationId: GetUsers
       tags:
         - users
-      x-spring-paginated: true
       parameters:
         - $ref: "#/components/parameters/pageablePage"
         - $ref: "#/components/parameters/pageableSize"
