@@ -48,6 +48,7 @@ paths:
       tags:
         - tasks
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -97,6 +98,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/taskId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -139,6 +141,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/taskId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -172,6 +175,7 @@ paths:
         - $ref: "#/components/parameters/taskId"
         - $ref: "#/components/parameters/commentId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -226,6 +230,7 @@ paths:
         - users
       security: [ ]
       requestBody:
+        required: true
         content:
           application/json:
             schema:
