@@ -1,7 +1,15 @@
 package dpr.playground.taskprovider;
 
-import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
-import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.Map;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,15 +21,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.util.MultiValueMap;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Base64;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
+import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
+import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
+import dpr.playground.taskprovider.tasks.model.UserDTO;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TaskProviderApplicationTests {
@@ -34,9 +37,20 @@ class TaskProviderApplicationTests {
 
     @Test
     void shouldAllowGettingTasksOnlyWithToken() throws URISyntaxException {
-        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString("user:password".getBytes())));
+        var createUserDTO = new CreateUserDTO(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString()
+        );
+        var createUserResponse = restTemplate.exchange(new RequestEntity<>(createUserDTO, HttpMethod.POST, new URI("http://localhost:" + port + "/users")), UserDTO.class);
+        assertEquals(HttpStatus.CREATED, createUserResponse.getStatusCode());
+        assertNotNull(createUserResponse.getBody());
+
+        MultiValueMap<String, String> loginHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((createUserDTO.getUsername() + ":" + createUserDTO.getPassword()).getBytes())));
         var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponseDTO.class);
         assertNotNull(loginResponse.getBody());
+
         MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getBody().getToken()));
         var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());

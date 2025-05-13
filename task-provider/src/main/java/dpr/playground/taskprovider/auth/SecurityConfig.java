@@ -30,6 +30,7 @@ class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(expressionInterceptUrlRegistry ->
                         expressionInterceptUrlRegistry
+                                .requestMatchers("/users").permitAll() // TODO POST permit all, GET authenticated
                                 .requestMatchers("/login").authenticated()
                                 .anyRequest().authenticated())
                 .httpBasic(httpSecurityHttpBasicConfigurer ->
