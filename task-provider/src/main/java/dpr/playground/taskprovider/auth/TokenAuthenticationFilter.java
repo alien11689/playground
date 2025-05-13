@@ -1,28 +1,29 @@
 package dpr.playground.taskprovider.auth;
 
-import dpr.playground.taskprovider.Database;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import dpr.playground.taskprovider.user.User;
+import dpr.playground.taskprovider.user.token.AccessTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Optional;
 
 @Component
-public class TokenAuthenticationFilter extends OncePerRequestFilter {
+class TokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
+    private final AccessTokenRepository accessTokenRepository;
 
-    public TokenAuthenticationFilter(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+    public TokenAuthenticationFilter(AccessTokenRepository accessTokenRepository) {
+        this.accessTokenRepository = accessTokenRepository;
     }
 
     @Override
@@ -37,13 +38,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7);
-        Optional<String> username = Database.getUserByToken(token);
+        String token = authHeader.substring("Bearer ".length());
+        Optional<User> maybeUser = accessTokenRepository.findUserByToken(UUID.fromString(token)); // TODO check token is uuid
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            username.ifPresent(userName -> {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-                SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+            maybeUser.ifPresent(user -> {
+                SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
             });
         }
 
