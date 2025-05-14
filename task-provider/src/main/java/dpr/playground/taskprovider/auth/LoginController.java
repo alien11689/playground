@@ -1,5 +1,6 @@
 package dpr.playground.taskprovider.auth;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,9 +18,11 @@ import dpr.playground.taskprovider.user.token.AccessTokenRepository;
 class LoginController implements LoginApi {
 
     private final AccessTokenRepository accessTokenRepository;
+    private final Clock clock;
 
-    LoginController(AccessTokenRepository accessTokenRepository) {
+    LoginController(AccessTokenRepository accessTokenRepository, Clock clock) {
         this.accessTokenRepository = accessTokenRepository;
+        this.clock = clock;
     }
 
     @Override
@@ -27,7 +30,7 @@ class LoginController implements LoginApi {
         LoginResponseDTO loginResponse = new LoginResponseDTO();
         UUID token = UUID.randomUUID();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var accessToken = new AccessToken(token, user.getId(), Instant.now()); // TODO use clock
+        var accessToken = new AccessToken(token, user.getId(), clock.instant());
         accessTokenRepository.save(accessToken);
         loginResponse.setToken(token.toString());
         return ResponseEntity.ok(loginResponse);

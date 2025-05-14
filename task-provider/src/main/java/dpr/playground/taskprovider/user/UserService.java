@@ -1,6 +1,6 @@
 package dpr.playground.taskprovider.user;
 
-import java.time.Instant;
+import java.time.Clock;
 import java.util.UUID;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,10 +15,12 @@ import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
 
-    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, Clock clock) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.clock = clock;
     }
 
     public User createUser(CreateUserDTO createUserDTO) {
@@ -29,7 +31,7 @@ public class UserService implements UserDetailsService {
                 passwordEncoder.encode(createUserDTO.getPassword()),
                 createUserDTO.getFirstName(),
                 createUserDTO.getLastName(),
-                Instant.now()); // TODO use clock
+                clock.instant());
         return userRepository.save(user);
     }
 
