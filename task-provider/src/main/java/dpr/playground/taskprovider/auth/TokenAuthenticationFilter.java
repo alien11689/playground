@@ -39,7 +39,7 @@ class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring("Bearer ".length());
-        Optional<User> maybeUser = accessTokenRepository.findUserByToken(UUID.fromString(token)); // TODO check token is uuid
+        Optional<User> maybeUser = accessTokenRepository.findUserByToken(UUID.fromString(token));
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             maybeUser.ifPresent(user -> {
