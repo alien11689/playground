@@ -23,6 +23,7 @@ import org.springframework.util.MultiValueMap;
 
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
+import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
 
@@ -51,11 +52,16 @@ class TaskProviderApplicationTests {
         var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("http://localhost:" + port + "/login")), LoginResponseDTO.class);
         assertNotNull(loginResponse.getBody());
 
-        MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getBody().getToken()));
-        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
+        MultiValueMap<String, String> bearerAuthHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getBody().getToken()));
+        var getTasksResponse = restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         assertNotNull(getTasksResponse.getBody());
         assertTrue(getTasksResponse.getBody().getTasks().isEmpty());
+
+        var getUsersResponse = restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/users")), GetUsersResponseDTO.class);
+        assertEquals(HttpStatus.OK, getUsersResponse.getStatusCode());
+        assertNotNull(getUsersResponse.getBody());
+        assertTrue(getUsersResponse.getBody().getUsers().contains(createUserResponse.getBody()));
     }
 
     @Test
@@ -63,6 +69,13 @@ class TaskProviderApplicationTests {
         MultiValueMap<String, String> getTasksHeaders = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + UUID.randomUUID()));
         var getTasksResponse = restTemplate.exchange(new RequestEntity<>(getTasksHeaders, HttpMethod.GET, new URI("http://localhost:" + port + "/tasks")), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.UNAUTHORIZED, getTasksResponse.getStatusCode());
+    }
+
+    @Test
+    void shouldRejectGettingUsersWithUnknownToken() throws URISyntaxException {
+        MultiValueMap<String, String> headers = MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + UUID.randomUUID()));
+        var response = restTemplate.exchange(new RequestEntity<>(headers, HttpMethod.GET, new URI("http://localhost:" + port + "/users")), GetUsersResponseDTO.class);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
 }

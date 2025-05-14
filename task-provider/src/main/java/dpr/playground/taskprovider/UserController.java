@@ -1,5 +1,7 @@
 package dpr.playground.taskprovider;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,14 +10,17 @@ import dpr.playground.taskprovider.tasks.api.UsersApi;
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
+import dpr.playground.taskprovider.user.UserRepository;
 import dpr.playground.taskprovider.user.UserService;
 
 @RestController
 public class UserController implements UsersApi {
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -31,6 +36,8 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<GetUsersResponseDTO> getUsers(Integer page, Integer size) {
-        throw new RuntimeException("Not implemented");
+        // TODO use page and size
+        List<UserDTO> users = userRepository.getAllView();
+        return ResponseEntity.ok(new GetUsersResponseDTO(users));
     }
 }
