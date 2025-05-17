@@ -3,16 +3,13 @@ package dpr.playground.taskprovider.user;
 import java.time.Clock;
 import java.util.UUID;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
@@ -33,10 +30,5 @@ public class UserService implements UserDetailsService {
                 createUserDTO.getLastName(),
                 clock.instant());
         return userRepository.save(user);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.getUserByUsername(username);
     }
 }
