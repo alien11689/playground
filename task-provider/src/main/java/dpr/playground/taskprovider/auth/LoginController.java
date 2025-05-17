@@ -1,7 +1,6 @@
 package dpr.playground.taskprovider.auth;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dpr.playground.taskprovider.tasks.api.LoginApi;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
-import dpr.playground.taskprovider.user.User;
 import dpr.playground.taskprovider.user.token.AccessToken;
 import dpr.playground.taskprovider.user.token.AccessTokenRepository;
 
@@ -27,12 +25,11 @@ class LoginController implements LoginApi {
 
     @Override
     public ResponseEntity<LoginResponseDTO> login() {
-        LoginResponseDTO loginResponse = new LoginResponseDTO();
-        UUID token = UUID.randomUUID();
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var token = UUID.randomUUID();
+        var user = (LoggedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var accessToken = new AccessToken(token, user.getId(), clock.instant());
         accessTokenRepository.save(accessToken);
-        loginResponse.setToken(token.toString());
+        var loginResponse = new LoginResponseDTO(token.toString());
         return ResponseEntity.ok(loginResponse);
     }
 }

@@ -10,7 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import dpr.playground.taskprovider.user.User;
 import dpr.playground.taskprovider.user.token.AccessTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,7 +38,7 @@ class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring("Bearer ".length());
-        Optional<User> maybeUser = accessTokenRepository.findUserByToken(UUID.fromString(token));
+        Optional<LoggedUser> maybeUser = accessTokenRepository.findLoggedUserByToken(UUID.fromString(token));
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             maybeUser.ifPresent(user -> {
