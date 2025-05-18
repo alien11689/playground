@@ -1,7 +1,6 @@
 package dpr.playground.taskprovider;
 
-import java.util.List;
-
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,8 +35,15 @@ public class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<GetUsersResponseDTO> getUsers(Integer page, Integer size) {
-        // TODO use page and size
-        List<UserDTO> users = userRepository.getAllView();
-        return ResponseEntity.ok(new GetUsersResponseDTO(users));
+        var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 10 : size);
+        var usersPage = userRepository.getAllView(pageable);
+        return ResponseEntity.ok(new GetUsersResponseDTO()
+                .content(usersPage.getContent())
+                .size(usersPage.getSize())
+                .last(usersPage.isLast())
+                .first(usersPage.isFirst())
+                .number(usersPage.getNumber())
+                .totalPages(usersPage.getTotalPages())
+        );
     }
 }

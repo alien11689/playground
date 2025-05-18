@@ -1,8 +1,9 @@
 package dpr.playground.taskprovider.user;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,5 +26,5 @@ public interface UserRepository extends CrudRepository<User, UUID>, UserDetailsS
             SELECT new dpr.playground.taskprovider.tasks.model.UserDTO(u.id, u.username, u.firstName,u.lastName)
             FROM User u
             """)
-    List<UserDTO> getAllView();
+    Page<UserDTO> getAllView(Pageable pageable);
 }

@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,8 +49,8 @@ class TaskProviderApplicationTests {
 
         getTasksSuccessfully(loginResponseDTO);
 
-        var usersResponseDTO = getUsersSuccessfully(loginResponseDTO);
-        assertTrue(usersResponseDTO.getUsers().contains(userDTO));
+        var users = getAllUsersSuccessfully(loginResponseDTO);
+        assertTrue(users.contains(userDTO));
     }
 
     @Test
@@ -61,7 +63,7 @@ class TaskProviderApplicationTests {
     @Test
     void shouldRejectGettingUsersWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
-        var response = getUsers(headers);
+        var response = getUsers(headers, null, null);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
@@ -86,24 +88,47 @@ class TaskProviderApplicationTests {
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         var tasks = getTasksResponse.getBody();
         assertNotNull(tasks);
-        assertTrue(tasks.getTasks().isEmpty());
+        assertTrue(tasks.getContent().isEmpty());
     }
 
     private ResponseEntity<GetTasksResponseDTO> getTasks(MultiValueMap<String, String> bearerAuthHeaders) throws URISyntaxException {
         return restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI("/tasks")), GetTasksResponseDTO.class);
     }
 
-    private GetUsersResponseDTO getUsersSuccessfully(LoginResponseDTO loginResponseDTO) throws URISyntaxException {
+    private List<UserDTO> getAllUsersSuccessfully(LoginResponseDTO loginResponseDTO) throws URISyntaxException {
         var bearerAuthHeaders = createBearerAuthHeaders(loginResponseDTO.getToken());
-        var getUsersResponse = getUsers(bearerAuthHeaders);
-        assertEquals(HttpStatus.OK, getUsersResponse.getStatusCode());
-        var usersResponseDTO = getUsersResponse.getBody();
-        assertNotNull(usersResponseDTO);
-        return usersResponseDTO;
+        var page = 0;
+        var size = 10;
+        var result = new ArrayList<UserDTO>();
+        while (true) {
+            var getUsersResponse = getUsers(bearerAuthHeaders, page, size);
+            assertEquals(HttpStatus.OK, getUsersResponse.getStatusCode());
+            var usersResponseDTO = getUsersResponse.getBody();
+            assertNotNull(usersResponseDTO);
+            result.addAll(usersResponseDTO.getContent());
+            page++;
+            if (usersResponseDTO.getLast()) {
+                break;
+            }
+        }
+        return result;
     }
 
-    private ResponseEntity<GetUsersResponseDTO> getUsers(MultiValueMap<String, String> bearerAuthHeaders) throws URISyntaxException {
-        return restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI("/users")), GetUsersResponseDTO.class);
+    private ResponseEntity<GetUsersResponseDTO> getUsers(MultiValueMap<String, String> bearerAuthHeaders, Integer page, Integer size) throws URISyntaxException {
+        StringBuilder uriBuilder = new StringBuilder("/users");
+        if (page != null || size != null) {
+            uriBuilder.append("?");
+            if (page != null) {
+                uriBuilder.append("page=").append(page);
+            }
+            if (size != null) {
+                if (page != null) {
+                    uriBuilder.append("&");
+                }
+                uriBuilder.append("size=").append(size);
+            }
+        }
+        return restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI(uriBuilder.toString())), GetUsersResponseDTO.class);
     }
 
     private MultiValueMap<String, String> createBasicAuthHeaders(String username, String password) {
