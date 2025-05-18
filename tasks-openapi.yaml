@@ -257,14 +257,14 @@ components:
         - summary
 
     GetTasksResponse:
-      type: object
-      properties:
-        tasks:
-          type: array
-          items:
-            $ref: "#/components/schemas/Task"
-      required:
-        - tasks
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
 
     Task:
       type: object
@@ -322,14 +322,14 @@ components:
         - message
 
     GetTaskCommentsResponse:
-      type: object
-      properties:
-        comments:
-          type: array
-          items:
-            $ref: "#/components/schemas/Comment"
-      required:
-        - comments
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
 
     Comment:
       type: object
@@ -419,18 +419,49 @@ components:
       format: uuid
 
     GetUsersResponse:
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-      required:
-        - users
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
 
     DateTime:
       type: string
       format: date-time
+
+    Page:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { }
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+      required:
+        - content
+        - totalElements
+        - totalPages
+        - size
+        - number
+        - first
+        - last
 
   responses:
     BadRequest:
