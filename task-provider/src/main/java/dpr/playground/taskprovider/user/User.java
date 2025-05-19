@@ -1,11 +1,7 @@
 package dpr.playground.taskprovider.user;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
-
-import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
