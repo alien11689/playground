@@ -1,4 +1,4 @@
-package dpr.playground.taskprovider;
+package dpr.playground.taskprovider.endpoint;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -13,11 +13,11 @@ import dpr.playground.taskprovider.user.UserRepository;
 import dpr.playground.taskprovider.user.UserService;
 
 @RestController
-public class UserController implements UsersApi {
+class UserController implements UsersApi {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
     }

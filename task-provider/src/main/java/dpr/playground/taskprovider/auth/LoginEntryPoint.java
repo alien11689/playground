@@ -1,15 +1,16 @@
 package dpr.playground.taskprovider.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dpr.playground.taskprovider.tasks.model.ErrorDTO;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dpr.playground.taskprovider.tasks.model.ErrorDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 class LoginEntryPoint extends BasicAuthenticationEntryPoint {

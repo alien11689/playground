@@ -1,4 +1,4 @@
-package dpr.playground.taskprovider.auth;
+package dpr.playground.taskprovider.endpoint;
 
 import java.time.Clock;
 import java.util.UUID;
@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
+import dpr.playground.taskprovider.auth.LoggedUser;
 import dpr.playground.taskprovider.tasks.api.LoginApi;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
 import dpr.playground.taskprovider.user.token.AccessToken;
