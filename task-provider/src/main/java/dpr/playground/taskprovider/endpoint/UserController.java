@@ -9,6 +9,7 @@ import dpr.playground.taskprovider.tasks.api.UsersApi;
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
+import dpr.playground.taskprovider.user.CreateUserCommand;
 import dpr.playground.taskprovider.user.UserRepository;
 import dpr.playground.taskprovider.user.UserService;
 
@@ -24,7 +25,13 @@ class UserController implements UsersApi {
 
     @Override
     public ResponseEntity<UserDTO> createUser(CreateUserDTO createUserDTO) {
-        var user = userService.createUser(createUserDTO);
+        var createUserCommand = new CreateUserCommand(
+                createUserDTO.getUsername(),
+                createUserDTO.getPassword(),
+                createUserDTO.getFirstName(),
+                createUserDTO.getLastName()
+        );
+        var user = userService.createUser(createUserCommand);
         return new ResponseEntity<>(new UserDTO(
                 user.getId(),
                 user.getUsername(),

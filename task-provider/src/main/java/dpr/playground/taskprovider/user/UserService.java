@@ -6,8 +6,6 @@ import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
-
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -20,14 +18,13 @@ public class UserService {
         this.clock = clock;
     }
 
-    public User createUser(CreateUserDTO createUserDTO) {
-        // TODO create domain record for create user
+    public User createUser(CreateUserCommand createUserCommand) {
         var user = new User(
                 UUID.randomUUID(),
-                createUserDTO.getUsername(),
-                passwordEncoder.encode(createUserDTO.getPassword()),
-                createUserDTO.getFirstName(),
-                createUserDTO.getLastName(),
+                createUserCommand.userName(),
+                passwordEncoder.encode(createUserCommand.password()),
+                createUserCommand.firstName(),
+                createUserCommand.lastName(),
                 clock.instant());
         return userRepository.save(user);
     }
