@@ -12,7 +12,33 @@ env:
   LC_ALL: en_US.UTF-8
 
 jobs:
-  Build:
+  BuildFrontend:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [ 22 ]
+        os: [ ubuntu-latest ]
+    name: Node ${{ matrix.node }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install
+        shell: bash
+        run: npm install --prefix ./task-app
+      - name: Lint
+        shell: bash
+        run: npm run lint --prefix ./task-app
+      - name: Build
+        shell: bash
+        run: npm run build --prefix ./task-app
+
+  BuildBackend:
     timeout-minutes: 10
     strategy:
       fail-fast: false
