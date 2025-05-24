@@ -1,6 +1,7 @@
 import {type SubmitHandler, useForm} from "react-hook-form"
 import {Button, Form} from "react-bootstrap";
 import * as React from "react";
+import axios from "axios";
 
 type Inputs = {
     username: string
@@ -21,7 +22,12 @@ export function CreateUser() {
         handleSubmit,
         formState: {errors},
     } = useForm<Inputs>()
-    const onSubmit: SubmitHandler<Inputs> = (data) => alert(`Creating user ${JSON.stringify(data)}`);
+
+    const onSubmit: SubmitHandler<Inputs> = (data) => {
+        axios.post("/api/users", data)
+            .then(response => alert(`User created with id ${response.data.id}`))
+            .catch(error => alert(`Error occurred ${JSON.stringify(error)}`));
+    }
 
     return (
         <Form onSubmit={handleSubmit(onSubmit)}>
