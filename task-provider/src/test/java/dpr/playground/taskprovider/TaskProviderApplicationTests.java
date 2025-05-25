@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
+import dpr.playground.taskprovider.tasks.model.ErrorDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
 import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
@@ -54,6 +55,20 @@ class TaskProviderApplicationTests {
     }
 
     @Test
+    void shouldReturnConflictWhenUsernameAlreadyExists() throws URISyntaxException {
+        var createUserDTO = new CreateUserDTO(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString()
+        );
+        createUserSuccessfully(createUserDTO);
+
+        ResponseEntity<ErrorDTO> errorResponse = createUser(createUserDTO, ErrorDTO.class);
+        assertEquals(HttpStatus.CONFLICT, errorResponse.getStatusCode());
+    }
+
+    @Test
     void shouldRejectGettingTasksWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
         var getTasksResponse = getTasks(headers);
@@ -68,10 +83,14 @@ class TaskProviderApplicationTests {
     }
 
     private UserDTO createUserSuccessfully(CreateUserDTO createUserDTO) throws URISyntaxException {
-        var createUserResponse = restTemplate.exchange(new RequestEntity<>(createUserDTO, HttpMethod.POST, new URI("/users")), UserDTO.class);
+        var createUserResponse = createUser(createUserDTO, UserDTO.class);
         assertEquals(HttpStatus.CREATED, createUserResponse.getStatusCode());
         assertNotNull(createUserResponse.getBody());
         return createUserResponse.getBody();
+    }
+
+    private <T> ResponseEntity<T> createUser(CreateUserDTO createUserDTO, Class<T> responseType) throws URISyntaxException {
+        return restTemplate.exchange(new RequestEntity<>(createUserDTO, HttpMethod.POST, new URI("/users")), responseType);
     }
 
     private LoginResponseDTO loginSuccessfully(String username, String password) throws URISyntaxException {
