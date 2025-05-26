@@ -1,7 +1,7 @@
-import {type SubmitHandler, useForm} from "react-hook-form"
+import {type FieldError, type SubmitHandler, useForm} from "react-hook-form"
 import {Button, Form} from "react-bootstrap";
 import * as React from "react";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 
 type Inputs = {
     username: string
@@ -10,9 +10,9 @@ type Inputs = {
     lastName: string
 }
 
-const InvalidValueForField: React.FC<{ children: string }> = ({children}: { children: string }) => {
+const ErrorForField: React.FC<{ error: FieldError | undefined }> = ({error}: { error: FieldError | undefined }) => {
     return (
-        <Form.Control.Feedback type="invalid">{children}</Form.Control.Feedback>
+        error && <Form.Control.Feedback type="invalid">{error.message}</Form.Control.Feedback>
     );
 }
 
@@ -21,32 +21,50 @@ export function CreateUser() {
         register,
         handleSubmit,
         formState: {errors},
+        setError,
+        clearErrors,
     } = useForm<Inputs>()
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
+        clearErrors();
         axios.post("/api/users", data)
             .then(response => alert(`User created with id ${response.data.id}`))
-            .catch(error => alert(`Error occurred ${JSON.stringify(error)}`));
+            .catch((error: AxiosError) => {
+                if (error.status == 409) {
+                    setError("username", {
+                        type: "manual",
+                        message: "Username already registered",
+                    }, {
+                        shouldFocus: true,
+                    })
+                } else {
+                    console.log("Error occurred when registering user", error);
+                    alert("Unexpected error occurred, please try again");
+                }
+            });
     }
 
     return (
         <Form onSubmit={handleSubmit(onSubmit)}>
             <Form.Label htmlFor="username">Username</Form.Label>
-            <Form.Control id="username" {...register("username", {required: true})} isInvalid={!!errors.username}/>
-            {errors.username && <InvalidValueForField>Username is required</InvalidValueForField>}
+            <Form.Control id="username" {...register("username", {required: 'Username is required'})}
+                          isInvalid={!!errors.username}/>
+            <ErrorForField error={errors.username}/>
             <br/>
             <Form.Label htmlFor="password">Password</Form.Label>
-            <Form.Control id="password" type="password" {...register("password", {required: true})}
+            <Form.Control id="password" type="password" {...register("password", {required: 'Password is required'})}
                           isInvalid={!!errors.password}/>
-            {errors.password && <InvalidValueForField>Password is required</InvalidValueForField>}
+            <ErrorForField error={errors.password}/>
             <br/>
             <Form.Label htmlFor="firstName">First name</Form.Label>
-            <Form.Control id="firstName" {...register("firstName", {required: true})} isInvalid={!!errors.firstName}/>
-            {errors.firstName && <InvalidValueForField>First name is required</InvalidValueForField>}
+            <Form.Control id="firstName" {...register("firstName", {required: 'First name is required'})}
+                          isInvalid={!!errors.firstName}/>
+            <ErrorForField error={errors.firstName}/>
             <br/>
             <Form.Label htmlFor="lastName">Last name</Form.Label>
-            <Form.Control id="lastName" {...register("lastName", {required: true})} isInvalid={!!errors.lastName}/>
-            {errors.lastName && <InvalidValueForField>Last name is required</InvalidValueForField>}
+            <Form.Control id="lastName" {...register("lastName", {required: 'Last name is required'})}
+                          isInvalid={!!errors.lastName}/>
+            <ErrorForField error={errors.lastName}/>
             <br/>
             <Button type="submit" variant="primary">Create user</Button>
         </Form>
