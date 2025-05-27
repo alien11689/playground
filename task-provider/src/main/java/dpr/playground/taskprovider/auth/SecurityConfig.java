@@ -19,18 +19,19 @@ class SecurityConfig {
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    public SecurityConfig(LoginEntryPoint entryPoint, TokenAuthenticationFilter tokenAuthenticationFilter, AuthenticationProvider authenticationProvider) {
+    SecurityConfig(LoginEntryPoint entryPoint, TokenAuthenticationFilter tokenAuthenticationFilter, AuthenticationProvider authenticationProvider) {
         this.entryPoint = entryPoint;
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
         this.authenticationProvider = authenticationProvider;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(expressionInterceptUrlRegistry ->
                         expressionInterceptUrlRegistry
+                                .requestMatchers("/", "/index.html", "/assets/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
                                 .requestMatchers("/login").authenticated()
                                 .anyRequest().authenticated())
