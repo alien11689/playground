@@ -27,7 +27,7 @@ export function CreateUser() {
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         clearErrors();
-        axios.post("/api/users", data)
+        axios.post("/users", data)
             .then(response => alert(`User created with id ${response.data.id}`))
             .catch((error: AxiosError) => {
                 if (error.status == 409) {
