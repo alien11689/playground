@@ -144,7 +144,7 @@
                 <executions>
                     <execution>
                         <id>npm install</id>
-                        <phase>prepare-package</phase>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -159,7 +159,7 @@
 
                     <execution>
                         <id>npm build</id>
-                        <phase>prepare-package</phase>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -179,7 +179,7 @@
                 <executions>
                     <execution>
                         <id>copy-frontend</id>
-                        <phase>prepare-package</phase>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
