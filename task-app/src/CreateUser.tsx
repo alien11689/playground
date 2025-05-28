@@ -1,9 +1,9 @@
 import {type FieldError, type SubmitHandler, useForm} from "react-hook-form"
 import {Button, Form} from "react-bootstrap";
 import * as React from "react";
-import axios, {AxiosError} from "axios";
+import axios from "axios";
 
-type Inputs = {
+interface Inputs {
     username: string
     password: string
     firstName: string
@@ -14,6 +14,10 @@ const ErrorForField: React.FC<{ error: FieldError | undefined }> = ({error}: { e
     return (
         error && <Form.Control.Feedback type="invalid">{error.message}</Form.Control.Feedback>
     );
+}
+
+interface CreateUserResponse {
+    id: string;
 }
 
 export function CreateUser() {
@@ -27,24 +31,29 @@ export function CreateUser() {
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
         clearErrors();
-        axios.post("/users", data)
-            .then(response => alert(`User created with id ${response.data.id}`))
-            .catch((error: AxiosError) => {
-                if (error.status == 409) {
-                    setError("username", {
-                        type: "manual",
-                        message: "Username already registered",
-                    }, {
-                        shouldFocus: true,
-                    })
-                } else {
-                    console.log("Error occurred when registering user", error);
-                    alert("Unexpected error occurred, please try again");
+        axios.post<CreateUserResponse>("/users", data)
+            .then(response => {
+                alert(`User created with id ${response.data.id}`);
+            })
+            .catch((error: unknown) => {
+                if (axios.isAxiosError(error)) {
+                    if (error.status == 409) {
+                        setError("username", {
+                            type: "manual",
+                            message: "Username already registered",
+                        }, {
+                            shouldFocus: true,
+                        })
+                    } else {
+                        console.log("Error occurred when registering user", error);
+                        alert("Unexpected error occurred, please try again");
+                    }
                 }
             });
     }
 
     return (
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         <Form onSubmit={handleSubmit(onSubmit)}>
             <Form.Label htmlFor="username">Username</Form.Label>
             <Form.Control id="username" {...register("username", {required: 'Username is required'})}
