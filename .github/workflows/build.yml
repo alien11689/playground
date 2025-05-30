@@ -60,8 +60,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
-    - name: Start Docker Compose
-      run: docker compose -f docker-compose.yml up -d
     - name: Build
       shell: bash
       run: mvn -V -U -e -ntp clean install
