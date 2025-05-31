@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 20
-  - package-ecosystem: "docker"
+  - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
       interval: "weekly"
