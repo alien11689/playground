@@ -1,0 +1,10 @@
+frontend:
+- changed-files:
+  - any-glob-to-any-file: 'task-app/**/*'
+backend:
+- changed-files:
+  - any-glob-to-any-file: 'task-provider/**/*'
+  - any-glob-to-any-file: 'task-consumer/**/*'
+api:
+  - changed-files:
+      - any-glob-to-any-file: 'tasks-openapi.yaml'
