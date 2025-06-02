@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: "alien11689/playground"
       - uses: actions/labeler@v5
         with:
           sync-labels: true
