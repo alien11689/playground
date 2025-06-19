@@ -27,7 +27,7 @@
         <postgresql.version>42.7.7</postgresql.version>
         <springdoc.version>2.8.9</springdoc.version>
         <swagger-ui.version>5.17.14</swagger-ui.version>
-        <testcontainers-postgresql.version>1.21.1</testcontainers-postgresql.version>
+        <testcontainers-postgresql.version>1.21.2</testcontainers-postgresql.version>
     </properties>
 
     <dependencies>
