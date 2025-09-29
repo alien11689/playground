@@ -20,7 +20,7 @@
         <jackson-version>2.19.2</jackson-version>
         <jakarta-annotation-version>3.0.0</jakarta-annotation-version>
         <jsr305.version>3.0.2</jsr305.version>
-        <openapi-generator-maven-plugin.version>7.15.0</openapi-generator-maven-plugin.version>
+        <openapi-generator-maven-plugin.version>7.16.0</openapi-generator-maven-plugin.version>
     </properties>
 
     <dependencies>
