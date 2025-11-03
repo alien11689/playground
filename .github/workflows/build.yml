@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [ 22 ]
+        node: [ 24 ]
         os: [ ubuntu-latest ]
     name: Node ${{ matrix.node }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [ 22 ]
+        node: [ 24 ]
         java: [ 25 ]
         os: [ ubuntu-latest ]
     name: JDK${{ matrix.java }} ${{ matrix.os }}
