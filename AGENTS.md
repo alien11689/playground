@@ -31,18 +31,11 @@ When you create any new file (specifications, code, documentation, etc.), you MU
 **NEVER run `git add` on existing files with changes**
 **NEVER commit or push without explicit user request**
 
-## Examples
-```bash
-# Create empty file and add it to git
-touch openspec/features/new-feature.md
-git add openspec/features/new-feature.md
+## Bash Command Restriction Rule
+**NEVER execute the `rm` command without explicit user permission**
 
-# Then add content (but don't git add)
-echo "# Feature Specification" > openspec/features/new-feature.md
-```
+When using bash commands:
+- ALWAYS check if the command involves file deletion
+- If a command uses `rm`, request explicit user confirmation before executing
+- Log any attempted `rm` usage for transparency
 
-## Git Operations
-- **ALLOWED**: `git add <new-empty-file>`
-- **FORBIDDEN**: `git add <existing-file-with-changes>`
-- **FORBIDDEN**: `git commit` (unless explicitly requested)
-- **FORBIDDEN**: `git push` (unless explicitly requested)
