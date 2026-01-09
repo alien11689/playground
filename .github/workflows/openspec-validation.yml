@@ -1,0 +1,26 @@
+name: OpenSpec Validation
+
+on:
+  pull_request:
+    paths:
+      - 'openspec/**'
+
+jobs:
+  validate-specs:
+    name: Validate OpenSpec specifications
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install OpenSpec CLI
+        run: npm install -g @fission-ai/openspec@latest
+
+      - name: Validate specifications
+        run: openspec validate --all --strict --json
