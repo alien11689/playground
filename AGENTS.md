@@ -16,3 +16,33 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+# AI Assistant Rules
+
+## File Management Rule
+**ALWAYS add new EMPTY files to git immediately after creation**
+
+When you create any new file (specifications, code, documentation, etc.), you MUST:
+1. Create the file as empty
+2. Run `git add <file-path>` to track the empty file
+3. Then add content to the file
+
+**NEVER add file content changes to git staging area**
+**NEVER run `git add` on existing files with changes**
+**NEVER commit or push without explicit user request**
+
+## Examples
+```bash
+# Create empty file and add it to git
+touch openspec/features/new-feature.md
+git add openspec/features/new-feature.md
+
+# Then add content (but don't git add)
+echo "# Feature Specification" > openspec/features/new-feature.md
+```
+
+## Git Operations
+- **ALLOWED**: `git add <new-empty-file>`
+- **FORBIDDEN**: `git add <existing-file-with-changes>`
+- **FORBIDDEN**: `git commit` (unless explicitly requested)
+- **FORBIDDEN**: `git push` (unless explicitly requested)
