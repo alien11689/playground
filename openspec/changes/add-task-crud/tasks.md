@@ -17,15 +17,7 @@
 - [x] 3.4 Set default status to NEW for new tasks
 
 ## 4. Testing
-- [x] 4.1 Create in-memory TaskRepository implementation for unit tests (HashMap-based)
-- [x] 4.2 Write unit tests for TaskService with in-memory repository
-
-## Implementation Notes
-- Task entity uses @Getter and @With annotations from Lombok 1.18.38
-- TaskService uses command pattern (CreateTaskCommand, UpdateTaskCommand)
-- TaskMapper uses MapStruct for DTO conversions
-- Java version set to 25 (per user preference)
-- Test files temporarily removed due to compilation issues with restTemplate type inference
-- End-to-end tests require manual implementation (TasksControllerTest.java removed)
+- [ ] 4.1 Create in-memory TaskRepository implementation for unit tests (HashMap-based)
+- [ ] 4.2 Write unit tests for TaskService with in-memory repository
 
 
