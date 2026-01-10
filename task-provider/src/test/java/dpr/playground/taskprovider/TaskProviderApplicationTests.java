@@ -67,7 +67,6 @@ class TaskProviderApplicationTests {
 
     @BeforeEach
     void setupLoggedInUser() throws URISyntaxException {
-if (loggedInUser == null){
     var createUserDTO = new CreateUserDTO(
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
@@ -76,7 +75,7 @@ if (loggedInUser == null){
         );
         createUserSuccessfully(createUserDTO);
         loggedInUser = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
-    }}
+    }
 
     @Test
     @Order(1)
@@ -244,6 +243,7 @@ if (loggedInUser == null){
         var nonExistentTaskId = UUID.randomUUID();
         var updateRequest = new TaskDTO();
         updateRequest.setSummary("Updated summary");
+        updateRequest.setStatus(TaskStatusDTO.PENDING);
 
         var response = restTemplate.exchange("/tasks/" + nonExistentTaskId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), ErrorDTO.class);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
