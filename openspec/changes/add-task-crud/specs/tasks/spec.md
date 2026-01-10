@@ -53,23 +53,6 @@ The system SHALL allow users to update existing tasks.
 - **THEN** 401 UNAUTHORIZED is returned
 - **AND** task is not updated
 
-### Requirement: Task Deletion
-The system SHALL allow users to delete tasks.
-
-#### Scenario: Successful task deletion
-- **WHEN** user deletes existing task
-- **THEN** task is removed from database
-- **AND** 204 NO CONTENT is returned
-
-#### Scenario: Delete non-existent task
-- **WHEN** user attempts to delete invalid task ID
-- **THEN** 404 NOT FOUND is returned
-
-#### Scenario: Unauthorized task deletion
-- **WHEN** unauthenticated user attempts to delete task
-- **THEN** 401 UNAUTHORIZED is returned
-- **AND** task is not deleted
-
 ### Requirement: Task Listing
 The system SHALL provide paginated task listing.
 

@@ -18,14 +18,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.util.MultiValueMap;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
@@ -39,7 +38,7 @@ import dpr.playground.taskprovider.tasks.model.UserDTO;
 class TaskProviderApplicationTests {
 
     private static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:16-alpine"
+            "postgres:17-alpine"
     );
 
     @BeforeAll
@@ -116,37 +115,37 @@ class TaskProviderApplicationTests {
     }
 
     private <T> ResponseEntity<T> createUser(CreateUserDTO createUserDTO, Class<T> responseType) throws URISyntaxException {
-        return restTemplate.exchange(new RequestEntity<>(createUserDTO, HttpMethod.POST, new URI("/users")), responseType);
+        return restTemplate.exchange("/users", HttpMethod.POST, new HttpEntity<>(createUserDTO), responseType);
     }
 
     private LoginResponseDTO loginSuccessfully(String username, String password) throws URISyntaxException {
         var loginHeaders = createBasicAuthHeaders(username, password);
-        var loginResponse = restTemplate.exchange(new RequestEntity<>(loginHeaders, HttpMethod.POST, new URI("/login")), LoginResponseDTO.class);
+        var loginResponse = restTemplate.exchange("/login", HttpMethod.POST, new HttpEntity<>(loginHeaders), LoginResponseDTO.class);
         var loginResponseDTO = loginResponse.getBody();
         assertNotNull(loginResponseDTO);
         return loginResponseDTO;
     }
 
     private void getTasksSuccessfully(LoginResponseDTO loginResponseDTO) throws URISyntaxException {
-        var bearerAuthHeaders = createBearerAuthHeaders(loginResponseDTO.getToken());
-        var getTasksResponse = getTasks(bearerAuthHeaders);
+        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var getTasksResponse = getTasks(headers);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         var tasks = getTasksResponse.getBody();
         assertNotNull(tasks);
         assertTrue(tasks.getContent().isEmpty());
     }
 
-    private ResponseEntity<GetTasksResponseDTO> getTasks(MultiValueMap<String, String> bearerAuthHeaders) throws URISyntaxException {
-        return restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI("/tasks")), GetTasksResponseDTO.class);
+    private ResponseEntity<GetTasksResponseDTO> getTasks(HttpHeaders headers) throws URISyntaxException {
+        return restTemplate.exchange("/tasks", HttpMethod.GET, new HttpEntity<>(headers), GetTasksResponseDTO.class);
     }
 
     private List<UserDTO> getAllUsersSuccessfully(LoginResponseDTO loginResponseDTO) throws URISyntaxException {
-        var bearerAuthHeaders = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
         var page = 0;
         var size = 10;
         var result = new ArrayList<UserDTO>();
         while (true) {
-            var getUsersResponse = getUsers(bearerAuthHeaders, page, size);
+            var getUsersResponse = getUsers(headers, page, size);
             assertEquals(HttpStatus.OK, getUsersResponse.getStatusCode());
             var usersResponseDTO = getUsersResponse.getBody();
             assertNotNull(usersResponseDTO);
@@ -159,7 +158,7 @@ class TaskProviderApplicationTests {
         return result;
     }
 
-    private ResponseEntity<GetUsersResponseDTO> getUsers(MultiValueMap<String, String> bearerAuthHeaders, Integer page, Integer size) throws URISyntaxException {
+    private ResponseEntity<GetUsersResponseDTO> getUsers(HttpHeaders headers, Integer page, Integer size) throws URISyntaxException {
         StringBuilder uriBuilder = new StringBuilder("/users");
         if (page != null || size != null) {
             uriBuilder.append("?");
@@ -173,15 +172,19 @@ class TaskProviderApplicationTests {
                 uriBuilder.append("size=").append(size);
             }
         }
-        return restTemplate.exchange(new RequestEntity<>(bearerAuthHeaders, HttpMethod.GET, new URI(uriBuilder.toString())), GetUsersResponseDTO.class);
+        return restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, new HttpEntity<>(headers), GetUsersResponseDTO.class);
     }
 
-    private MultiValueMap<String, String> createBasicAuthHeaders(String username, String password) {
+    private HttpHeaders createBasicAuthHeaders(String username, String password) {
+        var headers = new HttpHeaders();
         var authValue = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-        return MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, authValue));
+        headers.set(HttpHeaders.AUTHORIZATION, authValue);
+        return headers;
     }
 
-    private MultiValueMap<String, String> createBearerAuthHeaders(String token) {
-        return MultiValueMap.fromSingleValue(Map.of(HttpHeaders.AUTHORIZATION, "Bearer " + token));
+    private HttpHeaders createBearerAuthHeaders(String token) {
+        var headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        return headers;
     }
 }
