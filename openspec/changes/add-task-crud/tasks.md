@@ -19,5 +19,6 @@
 ## 4. Testing
 - [ ] 4.1 Create in-memory TaskRepository implementation for unit tests (HashMap-based)
 - [ ] 4.2 Write unit tests for TaskService with in-memory repository
+- [ ] 4.3 Write end-to-end tests for TasksController endpoints
 
 

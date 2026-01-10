@@ -10,6 +10,8 @@ TasksController has all endpoints defined in the API, but all methods throw "Not
 - Automatic timestamp and user setting (created/updated)
 - Controller uses repository directly for read operations, service for writes
 - **BREAKING**: Change default task status to NEW
+- Unit tests for TaskService with in-memory repository implementation
+- End-to-end tests for TasksController endpoints
 
 ## Impact
 - Affected specs: tasks (new capability)
