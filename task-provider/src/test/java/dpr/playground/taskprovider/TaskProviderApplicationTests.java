@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -27,11 +28,14 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO;
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.ErrorDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
 import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
+import dpr.playground.taskprovider.tasks.model.TaskDTO;
+import dpr.playground.taskprovider.tasks.model.TaskStatusDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -62,6 +66,7 @@ class TaskProviderApplicationTests {
     private TestRestTemplate restTemplate;
 
     @Test
+    @DirtiesContext
     void shouldAllowGettingTasksOnlyWithToken() throws URISyntaxException {
         var createUserDTO = new CreateUserDTO(
                 UUID.randomUUID().toString(),
@@ -107,6 +112,78 @@ class TaskProviderApplicationTests {
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
+    @Test
+    @DirtiesContext
+    void shouldCreateTaskSuccessfully() throws URISyntaxException {
+        var loginResponseDTO = loginSuccessfully();
+        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var addTaskRequest = new AddTaskRequestDTO();
+        addTaskRequest.setSummary("Test task summary");
+        addTaskRequest.setDescription("Test task description");
+
+        var response = restTemplate.exchange("/tasks", HttpMethod.POST, new HttpEntity<>(addTaskRequest, headers), TaskDTO.class);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Test task summary", response.getBody().getSummary());
+        assertEquals("Test task description", response.getBody().getDescription());
+        assertEquals(TaskStatusDTO.NEW, response.getBody().getStatus());
+        assertNotNull(response.getBody().getId());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertNotNull(response.getBody().getCreatedBy());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingNonExistentTask() throws URISyntaxException {
+        var loginResponseDTO = loginSuccessfully();
+        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var nonExistentTaskId = UUID.randomUUID();
+
+        var response = restTemplate.exchange("/tasks/" + nonExistentTaskId, HttpMethod.GET, new HttpEntity<>(headers), ErrorDTO.class);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void shouldRejectGettingTaskWithUnknownToken() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
+        var taskId = UUID.randomUUID();
+
+        var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.GET, new HttpEntity<>(headers), ErrorDTO.class);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldUpdateTaskSuccessfully() throws URISyntaxException {
+        var loginResponseDTO = loginSuccessfully();
+        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var taskId = createTask(headers, "Original summary", "Original description");
+
+        var updateRequest = new TaskDTO();
+        updateRequest.setSummary("Updated summary");
+        updateRequest.setDescription("Updated description");
+        updateRequest.setStatus(TaskStatusDTO.PENDING);
+
+        var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), Void.class);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+        var getResponse = restTemplate.exchange("/tasks/" + taskId, HttpMethod.GET, new HttpEntity<>(headers), TaskDTO.class);
+        assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        assertEquals("Updated summary", getResponse.getBody().getSummary());
+        assertEquals("Updated description", getResponse.getBody().getDescription());
+        assertEquals(TaskStatusDTO.PENDING, getResponse.getBody().getStatus());
+    }
+
+    @Test
+    void shouldRejectUpdatingTaskWithUnknownToken() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
+        var taskId = UUID.randomUUID();
+        var updateRequest = new TaskDTO();
+        updateRequest.setSummary("Updated summary");
+
+        var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
     private UserDTO createUserSuccessfully(CreateUserDTO createUserDTO) throws URISyntaxException {
         var createUserResponse = createUser(createUserDTO, UserDTO.class);
         assertEquals(HttpStatus.CREATED, createUserResponse.getStatusCode());
@@ -126,13 +203,34 @@ class TaskProviderApplicationTests {
         return loginResponseDTO;
     }
 
+    private LoginResponseDTO loginSuccessfully() throws URISyntaxException {
+        var createUserDTO = new CreateUserDTO(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString()
+        );
+        createUserSuccessfully(createUserDTO);
+        return loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
+    }
+
+    private UUID createTask(HttpHeaders headers, String summary, String description) throws URISyntaxException {
+        var addTaskRequest = new AddTaskRequestDTO();
+        addTaskRequest.setSummary(summary);
+        addTaskRequest.setDescription(description);
+
+        var response = restTemplate.exchange("/tasks", HttpMethod.POST, new HttpEntity<>(addTaskRequest, headers), TaskDTO.class);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        return response.getBody().getId();
+    }
+
     private void getTasksSuccessfully(LoginResponseDTO loginResponseDTO) throws URISyntaxException {
         var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
         var getTasksResponse = getTasks(headers);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         var tasks = getTasksResponse.getBody();
         assertNotNull(tasks);
-        assertTrue(tasks.getContent().isEmpty());
     }
 
     private ResponseEntity<GetTasksResponseDTO> getTasks(HttpHeaders headers) throws URISyntaxException {
