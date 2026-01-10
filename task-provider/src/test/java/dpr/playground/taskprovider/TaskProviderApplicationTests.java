@@ -12,8 +12,12 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.annotation.DirtiesContext;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -37,6 +41,8 @@ import dpr.playground.taskprovider.tasks.model.TaskStatusDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TaskProviderApplicationTests {
 
     private static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
@@ -63,7 +69,23 @@ class TaskProviderApplicationTests {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    private LoginResponseDTO loggedInUser;
+
+    @BeforeEach
+    void setupLoggedInUser() throws URISyntaxException {
+if (loggedInUser == null){
+    var createUserDTO = new CreateUserDTO(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString()
+        );
+        createUserSuccessfully(createUserDTO);
+        loggedInUser = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
+    }}
+
     @Test
+    @Order(1)
     void shouldReturnConflictWhenUsernameAlreadyExists() throws URISyntaxException {
         var createUserDTO = new CreateUserDTO(
                 UUID.randomUUID().toString(),
@@ -78,6 +100,7 @@ class TaskProviderApplicationTests {
     }
 
     @Test
+    @Order(3)
     void shouldRejectGettingTasksWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
         var getTasksResponse = getTasks(headers);
@@ -85,6 +108,7 @@ class TaskProviderApplicationTests {
     }
 
     @Test
+    @Order(4)
     void shouldRejectGettingUsersWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
         var response = getUsers(headers, null, null);
@@ -92,6 +116,7 @@ class TaskProviderApplicationTests {
     }
 
     @Test
+    @Order(5)
     void shouldRejectGettingTaskWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
         var taskId = UUID.randomUUID();
@@ -101,6 +126,7 @@ class TaskProviderApplicationTests {
     }
 
     @Test
+    @Order(6)
     void shouldRejectUpdatingTaskWithUnknownToken() throws URISyntaxException {
         var headers = createBearerAuthHeaders(UUID.randomUUID().toString());
         var taskId = UUID.randomUUID();
@@ -112,7 +138,7 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(7)
     void shouldAllowGettingTasksOnlyWithToken() throws URISyntaxException {
         var createUserDTO = new CreateUserDTO(
                 UUID.randomUUID().toString(),
@@ -121,7 +147,6 @@ class TaskProviderApplicationTests {
                 UUID.randomUUID().toString()
         );
         var userDTO = createUserSuccessfully(createUserDTO);
-
         var loginResponseDTO = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
         getTasksSuccessfully(loginResponseDTO);
@@ -131,10 +156,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(8)
     void shouldReturnBadRequestWhenCreatingTaskWithEmptySummary() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary("");
         addTaskRequest.setDescription("Valid description");
@@ -144,10 +168,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(9)
     void shouldReturnBadRequestWhenCreatingTaskWithNullSummary() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setDescription("Valid description");
 
@@ -156,10 +179,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(10)
     void shouldCreateTaskSuccessfully() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary("Test task summary");
         addTaskRequest.setDescription("Test task description");
@@ -176,10 +198,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(11)
     void shouldGetExistingTask() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var taskId = createTask(headers, "Task summary", "Task description");
 
         var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.GET, new HttpEntity<>(headers), TaskDTO.class);
@@ -192,10 +213,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(12)
     void shouldReturnNotFoundWhenGettingNonExistentTask() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var nonExistentTaskId = UUID.randomUUID();
 
         var response = restTemplate.exchange("/tasks/" + nonExistentTaskId, HttpMethod.GET, new HttpEntity<>(headers), ErrorDTO.class);
@@ -203,10 +223,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(13)
     void shouldUpdateTaskSuccessfully() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var taskId = createTask(headers, "Original summary", "Original description");
 
         var updateRequest = new TaskDTO();
@@ -225,10 +244,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(14)
     void shouldReturnNotFoundWhenUpdatingNonExistentTask() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var nonExistentTaskId = UUID.randomUUID();
         var updateRequest = new TaskDTO();
         updateRequest.setSummary("Updated summary");
@@ -238,10 +256,9 @@ class TaskProviderApplicationTests {
     }
 
     @Test
-    @DirtiesContext
+    @Order(0)
     void shouldReturnEmptyListWhenNoTasksExist() throws URISyntaxException {
-        var loginResponseDTO = loginSuccessfully();
-        var headers = createBearerAuthHeaders(loginResponseDTO.getToken());
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
         var getTasksResponse = restTemplate.exchange("/tasks", HttpMethod.GET, new HttpEntity<>(headers), GetTasksResponseDTO.class);
         assertEquals(HttpStatus.OK, getTasksResponse.getStatusCode());
         assertNotNull(getTasksResponse.getBody());
