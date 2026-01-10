@@ -45,18 +45,12 @@ import dpr.playground.taskprovider.tasks.model.UserDTO;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TaskProviderApplicationTests {
 
-    private static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
             "postgres:17-alpine"
     );
 
-    @BeforeAll
-    static void beforeAll() {
+    static {
         postgres.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        postgres.stop();
     }
 
     @DynamicPropertySource
