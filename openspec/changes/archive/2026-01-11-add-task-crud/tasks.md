@@ -15,12 +15,8 @@
 - [x] 3.2 Implement automatic timestamp setting
 - [x] 3.3 Add user context handling
 - [x] 3.4 Set default status to NEW for new tasks
-- [x] 3.5 Refactor TaskRepository.findById() to return Optional<Task>
-- [x] 3.6 Remove unused existsById() method from TaskRepository
-- [x] 3.7 Update test configuration to use ddl-auto: validate instead of create-drop
 
 ## 4. Testing
 - [x] 4.1 Create in-memory TaskRepository implementation for unit tests (HashMap-based)
 - [x] 4.2 Write unit tests for TaskService with in-memory repository
 - [x] 4.3 Write end-to-end tests for TasksController endpoints
-
