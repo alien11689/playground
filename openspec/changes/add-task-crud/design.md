@@ -13,7 +13,6 @@
 - Decision: Implement service layer for business logic
 - Decision: Use MapStruct for DTO mapping
 - Decision: Controller can use repository directly for read operations
-- Decision: Implement hard delete (no soft delete)
 - Decision: No search/filtering functionality in this change
 - Alternatives considered: Manual mapping, soft delete, advanced search
 

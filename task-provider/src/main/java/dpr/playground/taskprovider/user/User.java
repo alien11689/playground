@@ -8,7 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "`user`")
+@Table(name = "`user`", uniqueConstraints = {
+    @jakarta.persistence.UniqueConstraint(name = "uq_user__username", columnNames = "username")
+})
 public class User {
     private @Id UUID id;
     private String username;
