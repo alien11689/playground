@@ -19,8 +19,8 @@ public class InMemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Task findById(UUID id) {
-        return tasks.get(id);
+    public Optional<Task> findById(UUID id) {
+        return Optional.ofNullable(tasks.get(id));
     }
 
     @Override
@@ -37,10 +37,5 @@ public class InMemoryTaskRepository implements TaskRepository {
     @Override
     public void deleteById(UUID id) {
         tasks.remove(id);
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return tasks.containsKey(id);
     }
 }

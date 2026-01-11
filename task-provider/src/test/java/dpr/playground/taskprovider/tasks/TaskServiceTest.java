@@ -44,12 +44,12 @@ class TaskServiceTest {
     @Test
     void createTask_shouldPersistTask() {
         var command = new CreateTaskCommand("Test summary", null, UUID.randomUUID());
-        
+
         var task = taskService.createTask(command);
-        
+
         var savedTask = repository.findById(task.getId());
-        assertNotNull(savedTask);
-        assertEquals(task.getId(), savedTask.getId());
+        assertTrue(savedTask.isPresent());
+        assertEquals(task.getId(), savedTask.get().getId());
     }
 
     @Test
@@ -63,16 +63,16 @@ class TaskServiceTest {
                 java.util.Optional.of(TaskStatusDTO.PENDING),
                 java.util.Optional.of(UUID.randomUUID()),
                 userId);
-        
+
         var updatedTask = taskService.updateTask(createdTask.getId(), updateCommand);
-        
-        assertNotNull(updatedTask);
-        assertEquals("Updated summary", updatedTask.getSummary());
-        assertEquals("Updated description", updatedTask.getDescription());
-        assertEquals(TaskStatusDTO.PENDING, updatedTask.getStatus());
-        assertEquals(userId, updatedTask.getUpdatedBy());
-        assertEquals(createdTask.getCreatedAt(), updatedTask.getCreatedAt());
-        assertEquals(createdTask.getCreatedBy(), updatedTask.getCreatedBy());
+
+        assertTrue(updatedTask.isPresent());
+        assertEquals("Updated summary", updatedTask.get().getSummary());
+        assertEquals("Updated description", updatedTask.get().getDescription());
+        assertEquals(TaskStatusDTO.PENDING, updatedTask.get().getStatus());
+        assertEquals(userId, updatedTask.get().getUpdatedBy());
+        assertEquals(createdTask.getCreatedAt(), updatedTask.get().getCreatedAt());
+        assertEquals(createdTask.getCreatedBy(), updatedTask.get().getCreatedBy());
     }
 
     @Test
@@ -87,9 +87,9 @@ class TaskServiceTest {
                 UUID.randomUUID());
         
         taskService.updateTask(createdTask.getId(), updateCommand);
-        
+
         var updatedTask = repository.findById(createdTask.getId());
-        assertEquals(createdTask.getCreatedAt(), updatedTask.getCreatedAt());
+        assertEquals(createdTask.getCreatedAt(), updatedTask.get().getCreatedAt());
     }
 
     @Test
@@ -100,10 +100,10 @@ class TaskServiceTest {
                 java.util.Optional.empty(),
                 java.util.Optional.empty(),
                 UUID.randomUUID());
-        
+
         var result = taskService.updateTask(UUID.randomUUID(), updateCommand);
-        
-        assertNull(result);
+
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -116,22 +116,22 @@ class TaskServiceTest {
                 java.util.Optional.of(TaskStatusDTO.DONE),
                 java.util.Optional.empty(),
                 UUID.randomUUID());
-        
+
         var updatedTask = taskService.updateTask(createdTask.getId(), updateCommand);
-        
-        assertEquals("Test summary", updatedTask.getSummary());
-        assertEquals("Test description", updatedTask.getDescription());
-        assertEquals(TaskStatusDTO.DONE, updatedTask.getStatus());
+
+        assertEquals("Test summary", updatedTask.get().getSummary());
+        assertEquals("Test description", updatedTask.get().getDescription());
+        assertEquals(TaskStatusDTO.DONE, updatedTask.get().getStatus());
     }
 
     @Test
     void deleteTask_shouldDeleteExistingTask() {
         var createCommand = new CreateTaskCommand("Test summary", null, UUID.randomUUID());
         var createdTask = taskService.createTask(createCommand);
-        
+
         taskService.deleteTask(createdTask.getId());
-        
-        assertNull(repository.findById(createdTask.getId()));
+
+        assertTrue(repository.findById(createdTask.getId()).isEmpty());
     }
 
     @Test

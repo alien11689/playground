@@ -67,10 +67,10 @@ class TasksController implements TasksApi {
     @Override
     public ResponseEntity<TaskDTO> getTask(UUID taskId) {
         var task = taskRepository.findById(taskId);
-        if (task == null) {
+        if (task.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(taskMapper.toDtoWithAssignee(task));
+        return ResponseEntity.ok(taskMapper.toDtoWithAssignee(task.get()));
     }
 
     @Override
@@ -90,7 +90,7 @@ class TasksController implements TasksApi {
     public ResponseEntity<Void> updateTask(UUID taskId, TaskDTO task) {
         var currentUser = getCurrentUser();
         var existingTask = taskRepository.findById(taskId);
-        if (existingTask == null) {
+        if (existingTask.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
