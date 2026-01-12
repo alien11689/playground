@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 import dpr.playground.taskprovider.tasks.model.TaskStatusDTO;
+import dpr.playground.taskprovider.tasks.NotCommentAuthorException;
+import dpr.playground.taskprovider.tasks.NotCommentAuthorException;
 
 class CommentServiceTest {
     private CommentService commentService;
@@ -94,7 +96,7 @@ class CommentServiceTest {
         var otherUserId = UUID.randomUUID();
         var comment = commentService.createComment(taskId, "Content", authorId);
 
-        assertThrows(IllegalStateException.class, () -> {
+        assertThrows(NotCommentAuthorException.class, () -> {
             commentService.updateComment(comment.getId(), "Updated", otherUserId);
         });
     }
@@ -124,7 +126,7 @@ class CommentServiceTest {
         var otherUserId = UUID.randomUUID();
         var comment = commentService.createComment(taskId, "Content", authorId);
 
-        assertThrows(IllegalStateException.class, () -> {
+        assertThrows(NotCommentAuthorException.class, () -> {
             commentService.deleteComment(comment.getId(), otherUserId);
         });
     }
