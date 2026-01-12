@@ -22,6 +22,9 @@ import dpr.playground.taskprovider.tasks.Task;
 import dpr.playground.taskprovider.tasks.TaskMapper;
 import dpr.playground.taskprovider.tasks.TaskRepository;
 import dpr.playground.taskprovider.tasks.TaskService;
+import dpr.playground.taskprovider.tasks.CommentService;
+import dpr.playground.taskprovider.tasks.CommentRepository;
+import dpr.playground.taskprovider.tasks.CommentMapper;
 import dpr.playground.taskprovider.tasks.CreateTaskCommand;
 import dpr.playground.taskprovider.tasks.UpdateTaskCommand;
 
@@ -30,11 +33,17 @@ class TasksController implements TasksApi {
     private final TaskService taskService;
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final CommentService commentService;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
-    TasksController(TaskService taskService, TaskRepository taskRepository, TaskMapper taskMapper) {
+    TasksController(TaskService taskService, TaskRepository taskRepository, TaskMapper taskMapper, CommentService commentService, CommentRepository commentRepository, CommentMapper commentMapper) {
         this.taskService = taskService;
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.commentService = commentService;
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
     }
 
     private LoggedUser getCurrentUser() {
@@ -54,14 +63,20 @@ class TasksController implements TasksApi {
 
     @Override
     public ResponseEntity<CommentDTO> addTaskComment(UUID taskId, AddTaskCommentRequestDTO addTaskCommentRequest) {
-        // TODO implement
-        throw new RuntimeException("Not implemented");
+        var currentUser = getCurrentUser();
+        var comment = commentService.createComment(taskId, addTaskCommentRequest.getContent(), currentUser.getId());
+        return new ResponseEntity<>(commentMapper.toDto(comment), HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<Void> deleteTaskComment(UUID taskId, UUID commentId) {
-        // TODO implement
-        throw new RuntimeException("Not implemented");
+        var currentUser = getCurrentUser();
+        var existingComment = commentRepository.findById(commentId);
+        if (existingComment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        commentService.deleteComment(commentId, currentUser.getId());
+        return ResponseEntity.noContent().build();
     }
 
     @Override
@@ -75,8 +90,9 @@ class TasksController implements TasksApi {
 
     @Override
     public ResponseEntity<GetTaskCommentsResponseDTO> getTaskComments(UUID taskId, Integer page, Integer size) {
-        // TODO implement
-        throw new RuntimeException("Not implemented");
+        var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
+        var commentsPage = commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId, pageable);
+        return ResponseEntity.ok(commentMapper.toGetTaskCommentsResponse(commentsPage));
     }
 
     @Override
@@ -107,8 +123,12 @@ class TasksController implements TasksApi {
 
     @Override
     public ResponseEntity<Void> updateTaskComment(UUID taskId, UUID commentId, CommentDTO comment) {
-        // TODO implement
-        throw new RuntimeException("Not implemented");
+        var currentUser = getCurrentUser();
+        var updatedComment = commentService.updateComment(commentId, comment.getContent(), currentUser.getId());
+        if (updatedComment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
     }
 }
 

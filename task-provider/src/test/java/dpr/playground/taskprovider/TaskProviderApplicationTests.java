@@ -30,9 +30,12 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import dpr.playground.taskprovider.tasks.model.AddTaskCommentRequestDTO;
 import dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO;
+import dpr.playground.taskprovider.tasks.model.CommentDTO;
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.ErrorDTO;
+import dpr.playground.taskprovider.tasks.model.GetTaskCommentsResponseDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
 import dpr.playground.taskprovider.tasks.model.GetUsersResponseDTO;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
@@ -361,5 +364,242 @@ class TaskProviderApplicationTests {
         var headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         return headers;
+    }
+
+    @Test
+    @Order(15)
+    void shouldReturnBadRequestWhenAddingCommentWithEmptyContent() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent("");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Order(16)
+    void shouldReturnBadRequestWhenAddingCommentWithWhitespaceContent() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent("   ");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Order(17)
+    void shouldReturnNotFoundWhenAddingCommentToNonExistentTask() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var nonExistentTaskId = UUID.randomUUID();
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent("Test comment");
+
+        var response = restTemplate.exchange("/tasks/" + nonExistentTaskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @Order(18)
+    void shouldReturnBadRequestWhenAddingCommentToClosedTask() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        updateTaskStatus(headers, taskId, TaskStatusDTO.DONE);
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent("Test comment");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Order(19)
+    void shouldAddCommentSuccessfully() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent("Test comment");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), CommentDTO.class);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Test comment", response.getBody().getContent());
+        assertNotNull(response.getBody().getId());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertNotNull(response.getBody().getUpdatedAt());
+    }
+
+    @Test
+    @Order(20)
+    void shouldGetCommentsEmptyListWhenNoCommentsExist() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().getContent().isEmpty());
+        assertEquals(0, response.getBody().getTotalElements());
+    }
+
+    @Test
+    @Order(21)
+    void shouldGetCommentsSuccessfully() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        addComment(headers, taskId, "First comment");
+        addComment(headers, taskId, "Second comment");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getTotalElements());
+        assertEquals(2, response.getBody().getContent().size());
+    }
+
+    @Test
+    @Order(22)
+    void shouldGetCommentsSortedByNewestFirst() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var firstCommentId = addComment(headers, taskId, "First comment");
+        var secondCommentId = addComment(headers, taskId, "Second comment");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getContent().size());
+        assertEquals(secondCommentId, response.getBody().getContent().get(0).getId());
+        assertEquals(firstCommentId, response.getBody().getContent().get(1).getId());
+    }
+
+    @Test
+    @Order(23)
+    void shouldReturnNotFoundWhenGettingCommentsForNonExistentTask() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var nonExistentTaskId = UUID.randomUUID();
+
+        var response = restTemplate.exchange("/tasks/" + nonExistentTaskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().getContent().isEmpty());
+        assertEquals(0, response.getBody().getTotalElements());
+    }
+
+    @Test
+    @Order(24)
+    void shouldReturnNotFoundWhenUpdatingNonExistentComment() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var nonExistentCommentId = UUID.randomUUID();
+        var updateRequest = new CommentDTO();
+        updateRequest.setContent("Updated content");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + nonExistentCommentId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @Order(25)
+    void shouldReturnForbiddenWhenUpdatingAnotherUsersComment() throws URISyntaxException {
+        var headers1 = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers1, "Task summary", "Task description");
+        var commentId = addComment(headers1, taskId, "Original comment");
+
+        var headers2 = createBearerAuthHeaders(loginSuccessfully().getToken());
+        var updateRequest = new CommentDTO();
+        updateRequest.setContent("Updated content");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + commentId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers2), ErrorDTO.class);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @Order(26)
+    void shouldReturnBadRequestWhenUpdatingCommentWithEmptyContent() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var commentId = addComment(headers, taskId, "Original comment");
+        var updateRequest = new CommentDTO();
+        updateRequest.setContent("");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + commentId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), ErrorDTO.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Order(27)
+    void shouldUpdateCommentSuccessfully() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var commentId = addComment(headers, taskId, "Original comment");
+        var updateRequest = new CommentDTO();
+        updateRequest.setContent("Updated content");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + commentId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), Void.class);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+        var getResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        assertEquals(1, getResponse.getBody().getContent().size());
+        assertEquals("Updated content", getResponse.getBody().getContent().get(0).getContent());
+    }
+
+    @Test
+    @Order(28)
+    void shouldReturnNotFoundWhenDeletingNonExistentComment() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var nonExistentCommentId = UUID.randomUUID();
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + nonExistentCommentId, HttpMethod.DELETE, new HttpEntity<>(headers), ErrorDTO.class);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @Order(29)
+    void shouldReturnForbiddenWhenDeletingAnotherUsersComment() throws URISyntaxException {
+        var headers1 = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers1, "Task summary", "Task description");
+        var commentId = addComment(headers1, taskId, "Original comment");
+
+        var headers2 = createBearerAuthHeaders(loginSuccessfully().getToken());
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + commentId, HttpMethod.DELETE, new HttpEntity<>(headers2), ErrorDTO.class);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @Order(30)
+    void shouldDeleteCommentSuccessfully() throws URISyntaxException {
+        var headers = createBearerAuthHeaders(loggedInUser.getToken());
+        var taskId = createTask(headers, "Task summary", "Task description");
+        var commentId = addComment(headers, taskId, "Original comment");
+
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments/" + commentId, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+        var getResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
+        assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        assertEquals(0, getResponse.getBody().getTotalElements());
+    }
+
+    private UUID addComment(HttpHeaders headers, UUID taskId, String content) throws URISyntaxException {
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent(content);
+        var response = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(addCommentRequest, headers), CommentDTO.class);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        return response.getBody().getId();
+    }
+
+    private void updateTaskStatus(HttpHeaders headers, UUID taskId, TaskStatusDTO status) throws URISyntaxException {
+        var updateRequest = new TaskDTO();
+        updateRequest.setStatus(status);
+        var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), Void.class);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 }
