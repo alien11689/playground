@@ -353,7 +353,7 @@ components:
         - content
         - createdAt
         - updatedAt
-        - authorId
+        - addedBy
 
     AddTaskCommentRequest:
       type: object

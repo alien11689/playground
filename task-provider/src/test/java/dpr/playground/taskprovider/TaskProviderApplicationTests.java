@@ -597,8 +597,16 @@ class TaskProviderApplicationTests {
     }
 
     private void updateTaskStatus(HttpHeaders headers, UUID taskId, TaskStatusDTO status) throws URISyntaxException {
+        var getResponse = restTemplate.exchange("/tasks/" + taskId, HttpMethod.GET, new HttpEntity<>(headers), TaskDTO.class);
+        assertEquals(HttpStatus.OK, getResponse.getStatusCode());
+        var currentTask = getResponse.getBody();
+        assertNotNull(currentTask);
+
         var updateRequest = new TaskDTO();
+        updateRequest.setSummary(currentTask.getSummary());
+        updateRequest.setDescription(currentTask.getDescription());
         updateRequest.setStatus(status);
+        updateRequest.setAssignee(currentTask.getAssignee());
         var response = restTemplate.exchange("/tasks/" + taskId, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), Void.class);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
