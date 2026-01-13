@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import dpr.playground.taskprovider.tasks.NotCommentAuthorException;
 import dpr.playground.taskprovider.tasks.model.ErrorDTO;
 
 @ControllerAdvice
@@ -28,6 +29,24 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorDTO> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotCommentAuthorException.class)
+    ResponseEntity<ErrorDTO> handleNotCommentAuthorException(NotCommentAuthorException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    ResponseEntity<ErrorDTO> handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorDTO(ex.getMessage()));
     }
 }
