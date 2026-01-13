@@ -27,8 +27,10 @@ import dpr.playground.taskprovider.tasks.CommentRepository;
 import dpr.playground.taskprovider.tasks.CommentMapper;
 import dpr.playground.taskprovider.tasks.CreateTaskCommand;
 import dpr.playground.taskprovider.tasks.UpdateTaskCommand;
+import lombok.AllArgsConstructor;
 
 @RestController
+@AllArgsConstructor
 class TasksController implements TasksApi {
     private final TaskService taskService;
     private final TaskRepository taskRepository;
@@ -36,15 +38,6 @@ class TasksController implements TasksApi {
     private final CommentService commentService;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-
-    TasksController(TaskService taskService, TaskRepository taskRepository, TaskMapper taskMapper, CommentService commentService, CommentRepository commentRepository, CommentMapper commentMapper) {
-        this.taskService = taskService;
-        this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
-        this.commentService = commentService;
-        this.commentRepository = commentRepository;
-        this.commentMapper = commentMapper;
-    }
 
     private LoggedUser getCurrentUser() {
         return (LoggedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
