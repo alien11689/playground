@@ -4,9 +4,23 @@ on:
   pull_request:
     branches:
       - 'main'
+    paths:
+      - 'task-app/**'
+      - 'task-consumer/**'
+      - 'task-provider/**'
+      - 'pom.xml'
+      - 'tasks-openapi.yaml'
+      - '.github/workflows/build.yml'
   push:
     branches:
       - 'main'
+    paths:
+      - 'task-app/**'
+      - 'task-consumer/**'
+      - 'task-provider/**'
+      - 'pom.xml'
+      - 'tasks-openapi.yaml'
+      - '.github/workflows/build.yml'
 
 env:
   LC_ALL: en_US.UTF-8
