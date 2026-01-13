@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'openspec/**'
+      - '.github/workflows/openspec-validation.yml'
 
 jobs:
   validate-specs:
