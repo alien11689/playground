@@ -7,7 +7,7 @@ Currently tasks exist independently without grouping or organization. Users need
 - Add new Project entity with id, name, description (optional), status (ACTIVE/ARCHIVED)
 - Add projectId field to Task entity (required, references Project.id)
 - Implement project CRUD endpoints: POST /projects, GET /projects, GET /projects/{id}, PUT /projects/{id}
-- Implement project status management via query param action: PUT /projects/{id}?action=archive|restore
+- Implement project status management via POST /projects/{id}?action=archive|restore
 - Add rejectUnfinishedTasks parameter for archive action (sets unfinished tasks to REJECTED)
 - Validate project status before creating/updating tasks
 - Validate project status before updating task comments

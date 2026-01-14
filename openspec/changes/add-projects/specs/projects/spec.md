@@ -73,43 +73,43 @@ The system SHALL provide paginated project listing.
 The system SHALL allow users to archive active projects with optional unfinished task rejection.
 
 #### Scenario: Archive project without rejecting unfinished tasks
-- **WHEN** user archives project with rejectUnfinishedTasks=false
+- **WHEN** user calls POST /projects/{id}?action=archive&rejectUnfinishedTasks=false
 - **THEN** project status changes to ARCHIVED
 - **AND** all task statuses remain unchanged
 - **AND** tasks in project cannot be modified
 
 #### Scenario: Archive project and reject unfinished tasks
-- **WHEN** user archives project with rejectUnfinishedTasks=true
+- **WHEN** user calls POST /projects/{id}?action=archive&rejectUnfinishedTasks=true
 - **THEN** project status changes to ARCHIVED
 - **AND** tasks with status NEW or PENDING are set to REJECTED
 - **AND** tasks with status DONE or REJECTED remain unchanged
 - **AND** tasks in project cannot be modified
 
 #### Scenario: Archive already archived project
-- **WHEN** user attempts to archive project that is already ARCHIVED
+- **WHEN** user calls POST /projects/{id}?action=archive on project that is already ARCHIVED
 - **THEN** operation succeeds with no changes
 - **AND** project remains ARCHIVED
 
 #### Scenario: Archive non-existent project
-- **WHEN** user attempts to archive non-existent project
+- **WHEN** user calls POST /projects/{nonExistentId}?action=archive
 - **THEN** 404 NOT FOUND is returned
 
 ### Requirement: Project Restoration
 The system SHALL allow users to restore archived projects to active status.
 
 #### Scenario: Restore archived project
-- **WHEN** user restores project with ARCHIVED status
+- **WHEN** user calls POST /projects/{id}?action=restore on project with ARCHIVED status
 - **THEN** project status changes to ACTIVE
 - **AND** updatedAt timestamp is automatically set
 - **AND** tasks in project can be modified again
 
 #### Scenario: Restore already active project
-- **WHEN** user attempts to restore project that is already ACTIVE
+- **WHEN** user calls POST /projects/{id}?action=restore on project that is already ACTIVE
 - **THEN** operation succeeds with no changes
 - **AND** project remains ACTIVE
 
 #### Scenario: Restore non-existent project
-- **WHEN** user attempts to restore non-existent project
+- **WHEN** user calls POST /projects/{nonExistentId}?action=restore
 - **THEN** 404 NOT FOUND is returned
 
 ### Requirement: Project Existence Validation

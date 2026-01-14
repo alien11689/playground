@@ -30,12 +30,12 @@ Tasks currently exist independently without organization. Users need project man
   - Keep tasks project-agnostic → rejected: defeats purpose of projects
 - Rationale: Direct FK relationship simplifies queries and maintains referential integrity
 
-### Query Parameter for Actions
-- Decision: Use `action=archive|restore` query parameter on PUT /projects/{id} endpoint
+### Action Endpoints
+- Decision: Use POST /projects/{id} with `action=archive|restore` query parameter
 - Alternatives considered:
-  - Separate endpoints PATCH /projects/{id}/archive, PATCH /projects/{id}/restore → rejected: inconsistent with existing patterns
-  - PUT body with action field → rejected: action is not project data
-- Rationale: Follows RESTful convention for resource state transitions, similar to existing patterns
+  - Separate endpoints POST /projects/{id}/archive, POST /projects/{id}/restore → rejected: more endpoints to maintain
+  - PUT /projects/{id}?action=... → rejected: PUT implies full resource update, not action
+- Rationale: POST explicitly indicates state-changing action, single endpoint pattern reduces API surface
 
 ### Project Status Validation Location
 - Decision: Implement shared `isProjectActive(projectId)` method in ProjectService
@@ -46,17 +46,18 @@ Tasks currently exist independently without organization. Users need project man
 - Rationale: Single source of truth for project status, easy to test, reusable across TaskService and CommentService
 
 ### Error Handling
-- Decision: Create specific exceptions: `ProjectArchivedException` and `ProjectNotFoundException`
+- Decision: Create specific exceptions extending RuntimeException: `ProjectArchivedException` and `ProjectNotFoundException`
 - Alternatives considered:
-  - Generic `RuntimeException` → rejected: no specificity for clients
-  - Use HTTP status codes only → rejected: clients need actionable error messages
-- Rationale: Specific exceptions allow proper error response mapping and clear client handling
+  - Extend checked exceptions (Exception) → rejected: forces unnecessary try-catch
+  - Generic RuntimeException → rejected: no specificity for clients
+- Rationale: Extending RuntimeException maintains Spring's exception handling while providing specific error types
 
 ### Unfinished Task Rejection
-- Decision: Optional `rejectUnfinishedTasks` boolean parameter on archive action
+- Decision: Optional `rejectUnfinishedTasks` boolean query parameter on archive action
 - Behavior when true:
-  - Find all tasks in project with status NOT IN (DONE, REJECTED)
+  - Find all tasks in project with status IN (NEW, PENDING)
   - Update status to REJECTED
+  - Tasks with status DONE or REJECTED remain unchanged
 - Behavior when false:
   - Leave all task statuses unchanged
 - Rationale: Gives users control over task handling during archive, flexibility for different workflows
@@ -66,13 +67,16 @@ Tasks currently exist independently without organization. Users need project man
 ### New Table: project
 ```sql
 CREATE TABLE project (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
-    status VARCHAR NOT NULL DEFAULT 'ACTIVE', -- ACTIVE or ARCHIVED
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    status VARCHAR NOT NULL, -- ACTIVE or ARCHIVED (managed by application)
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );
+
+CREATE UNIQUE INDEX idx_project_name ON project(name);
+CREATE INDEX idx_project_status ON project(status);
 ```
 
 ### Modified Table: task
@@ -86,12 +90,12 @@ ALTER TABLE task ALTER COLUMN project_id SET NOT NULL;
 ## API Design
 
 ### Project Endpoints
-- `POST /projects` - Create project (status defaults to ACTIVE)
+- `POST /projects` - Create project (status set to ACTIVE by application)
 - `GET /projects` - List projects (pagination)
 - `GET /projects/{projectId}` - Get project details
 - `PUT /projects/{projectId}` - Update name and description
-- `PUT /projects/{projectId}?action=archive&rejectUnfinishedTasks={boolean}` - Archive project
-- `PUT /projects/{projectId}?action=restore` - Restore project
+- `POST /projects/{projectId}?action=archive&rejectUnfinishedTasks={boolean}` - Archive project
+- `POST /projects/{projectId}?action=restore` - Restore project
 
 ### Task Endpoints (Modified)
 - `POST /tasks` - Create task with required `projectId` in body
@@ -136,7 +140,7 @@ ALTER TABLE task ALTER COLUMN project_id SET NOT NULL;
 
 ### Risk: Performance impact of project validation
 - Impact: Additional DB query on each task/comment mutation
-- Mitigation: Database indexes on project status; consider caching if needed
+- Mitigation: Database indexes on project.status (non-unique) and project.name (unique) added at migration time; consider caching if needed
 - Trade-off: Acceptable for current scale, optimize if data shows bottleneck
 
 ### Risk: Breaking changes to task API
