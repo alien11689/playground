@@ -76,4 +76,4 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Build
       shell: bash
-      run: mvn -V -U -e -ntp clean install
+      run: ./mvnw -V -U -e -ntp clean install
