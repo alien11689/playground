@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,17 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import dpr.playground.taskprovider.tasks.model.AddTaskCommentRequestDTO;
 import dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO;
@@ -46,25 +40,7 @@ import dpr.playground.taskprovider.tasks.model.UserDTO;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class TaskProviderApplicationTests {
-
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:17-alpine"
-    );
-
-    static {
-        postgres.start();
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-
-    @Autowired
-    private TestRestTemplate restTemplate;
+class TaskProviderApplicationTests extends AbstractIntegrationTest {
 
     private LoginResponseDTO loggedInUser;
 
@@ -264,25 +240,6 @@ class TaskProviderApplicationTests {
         assertEquals(0, getTasksResponse.getBody().getTotalElements());
     }
 
-    private UserDTO createUserSuccessfully(CreateUserDTO createUserDTO) throws URISyntaxException {
-        var createUserResponse = createUser(createUserDTO, UserDTO.class);
-        assertEquals(HttpStatus.CREATED, createUserResponse.getStatusCode());
-        assertNotNull(createUserResponse.getBody());
-        return createUserResponse.getBody();
-    }
-
-    private <T> ResponseEntity<T> createUser(CreateUserDTO createUserDTO, Class<T> responseType) throws URISyntaxException {
-        return restTemplate.exchange("/users", HttpMethod.POST, new HttpEntity<>(createUserDTO), responseType);
-    }
-
-    private LoginResponseDTO loginSuccessfully(String username, String password) throws URISyntaxException {
-        var loginHeaders = createBasicAuthHeaders(username, password);
-        var loginResponse = restTemplate.exchange("/login", HttpMethod.POST, new HttpEntity<>(loginHeaders), LoginResponseDTO.class);
-        var loginResponseDTO = loginResponse.getBody();
-        assertNotNull(loginResponseDTO);
-        return loginResponseDTO;
-    }
-
     private LoginResponseDTO loginSuccessfully() throws URISyntaxException {
         var createUserDTO = new CreateUserDTO(
                 UUID.randomUUID().toString(),
@@ -351,19 +308,6 @@ class TaskProviderApplicationTests {
             }
         }
         return restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, new HttpEntity<>(headers), GetUsersResponseDTO.class);
-    }
-
-    private HttpHeaders createBasicAuthHeaders(String username, String password) {
-        var headers = new HttpHeaders();
-        var authValue = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-        headers.set(HttpHeaders.AUTHORIZATION, authValue);
-        return headers;
-    }
-
-    private HttpHeaders createBearerAuthHeaders(String token) {
-        var headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        return headers;
     }
 
     @Test
