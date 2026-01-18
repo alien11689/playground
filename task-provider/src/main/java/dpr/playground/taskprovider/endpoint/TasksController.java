@@ -1,5 +1,6 @@
 package dpr.playground.taskprovider.endpoint;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,10 +28,11 @@ import dpr.playground.taskprovider.tasks.CommentRepository;
 import dpr.playground.taskprovider.tasks.CommentMapper;
 import dpr.playground.taskprovider.tasks.CreateTaskCommand;
 import dpr.playground.taskprovider.tasks.UpdateTaskCommand;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 class TasksController implements TasksApi {
     private final TaskService taskService;
     private final TaskRepository taskRepository;
@@ -46,10 +48,21 @@ class TasksController implements TasksApi {
     @Override
     public ResponseEntity<TaskDTO> addTask(AddTaskRequestDTO addTaskRequest) {
         var currentUser = getCurrentUser();
+
+        UUID projectId = null;
+        try {
+            java.lang.reflect.Method getProjectIdMethod = addTaskRequest.getClass().getMethod("getProjectId");
+            Object result = getProjectIdMethod.invoke(addTaskRequest);
+            projectId = (UUID) result;
+        } catch (Exception e) {
+            projectId = null;
+        }
+
         var command = new CreateTaskCommand(
                 addTaskRequest.getSummary(),
                 addTaskRequest.getDescription(),
-                currentUser.getId());
+                currentUser.getId(),
+                projectId);
         var task = taskService.createTask(command);
         return new ResponseEntity<>(taskMapper.toDtoWithAssignee(task), HttpStatus.CREATED);
     }
