@@ -2,7 +2,7 @@ openapi: 3.1.1
 info:
   title: Tasks API
   description: Tasks sample API
-  version: 0.0.3
+  version: 0.0.4
 
 paths:
   /login:
@@ -32,6 +32,11 @@ paths:
       parameters:
         - $ref: "#/components/parameters/pageablePage"
         - $ref: "#/components/parameters/pageableSize"
+        - in: query
+          name: projectId
+          schema:
+            $ref: "#/components/schemas/ProjectId"
+          required: false
       responses:
         "200":
           description: Successful response
@@ -243,6 +248,125 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
 
+  /projects:
+    get:
+      summary: Returns a list of projects.
+      operationId: GetProjects
+      tags:
+        - projects
+      parameters:
+        - $ref: "#/components/parameters/pageablePage"
+        - $ref: "#/components/parameters/pageableSize"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetProjectsResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+    post:
+      summary: Create a project
+      operationId: CreateProject
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectRequest"
+      responses:
+        201:
+          description: Project created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+
+  /projects/{projectId}:
+    get:
+      summary: Returns a project
+      operationId: GetProject
+      tags:
+        - projects
+      parameters:
+        - $ref: "#/components/parameters/projectId"
+      responses:
+        200:
+          description: Project view
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+        404:
+          $ref: "#/components/responses/ProjectNotFound"
+    put:
+      summary: Updates a project
+      operationId: UpdateProject
+      tags:
+        - projects
+      parameters:
+        - $ref: "#/components/parameters/projectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectRequest"
+      responses:
+        204:
+          description: Project updated
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+        404:
+          $ref: "#/components/responses/ProjectNotFound"
+    post:
+      summary: Archive or restore a project
+      operationId: ManageProjectStatus
+      tags:
+        - projects
+      parameters:
+        - $ref: "#/components/parameters/projectId"
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum:
+              - archive
+              - restore
+          required: true
+        - in: query
+          name: rejectUnfinishedTasks
+          schema:
+            type: boolean
+            default: false
+          required: false
+      responses:
+        204:
+          description: Project status updated
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/UnauthorizedInvalidToken"
+        404:
+          $ref: "#/components/responses/ProjectNotFound"
+
 
 components:
   schemas:
@@ -253,8 +377,11 @@ components:
           $ref: "#/components/schemas/NonEmptyString"
         description:
           type: string
+        projectId:
+          $ref: "#/components/schemas/ProjectId"
       required:
         - summary
+        - projectId
 
     GetTasksResponse:
       allOf:
@@ -292,6 +419,8 @@ components:
           readOnly: true
         assignee:
           $ref: "#/components/schemas/UserId"
+        projectId:
+          $ref: "#/components/schemas/ProjectId"
       required:
         - id
         - summary
@@ -300,6 +429,7 @@ components:
         - createdBy
         - updatedAt
         - updatedBy
+        - projectId
 
     TaskId:
       type: string
@@ -428,6 +558,71 @@ components:
               items:
                 $ref: '#/components/schemas/User'
 
+    Project:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ProjectId"
+          readOnly: true
+        name:
+          $ref: "#/components/schemas/NonEmptyString"
+        description:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProjectStatus"
+        createdAt:
+          $ref: "#/components/schemas/DateTime"
+          readOnly: true
+        updatedAt:
+          $ref: "#/components/schemas/DateTime"
+          readOnly: true
+      required:
+        - id
+        - name
+        - status
+        - createdAt
+        - updatedAt
+
+    ProjectId:
+      type: string
+      format: uuid
+
+    ProjectStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ARCHIVED
+
+    CreateProjectRequest:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/NonEmptyString"
+        description:
+          type: string
+      required:
+        - name
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/NonEmptyString"
+        description:
+          type: string
+      required:
+        - name
+
+    GetProjectsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Project'
+
     DateTime:
       type: string
       format: date-time
@@ -482,6 +677,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    ProjectNotFound:
+      description: Project not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     UnauthorizedInvalidToken:
       description: Token is invalid
       content:
@@ -501,6 +702,12 @@ components:
       name: commentId
       schema:
         $ref: "#/components/schemas/CommentId"
+      required: true
+    projectId:
+      in: path
+      name: projectId
+      schema:
+        $ref: "#/components/schemas/ProjectId"
       required: true
     pageablePage:
       in: query
@@ -539,3 +746,5 @@ tags:
     description: Authentication related operations
   - name: users
     description: Users management
+  - name: projects
+    description: Projects management
