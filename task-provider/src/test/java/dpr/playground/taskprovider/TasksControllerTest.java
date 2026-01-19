@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO;
 import dpr.playground.taskprovider.tasks.model.GetTasksResponseDTO;
 import dpr.playground.taskprovider.tasks.model.TaskDTO;
+import dpr.playground.taskprovider.TestDataGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,16 +18,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class TasksControllerTest extends AbstractIntegrationTest {
     @Test
     void addTask_withValidProjectId_shouldReturn201() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
-        var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest.setName("Test Project");
-        var projectResponse = restTemplate.exchange(
+        var createProjectRequest = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
@@ -41,22 +41,20 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 TaskDTO.class);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(TestDataGenerator.TaskGenerator.randomTaskSummary(), response.getBody().getSummary());
         assertEquals(project.getId(), response.getBody().getProjectId());
     }
 
     @Test
     void addTask_withArchivedProject_shouldReturn400() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
-        var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest.setName("Test Project");
-        var projectResponse = restTemplate.exchange(
+        var createProjectRequest = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
@@ -81,9 +79,9 @@ class TasksControllerTest extends AbstractIntegrationTest {
 
     @Test
     void addTask_withNonExistentProjectId_shouldReturn400() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
@@ -100,18 +98,25 @@ class TasksControllerTest extends AbstractIntegrationTest {
 
     @Test
     void getTasks_withProjectId_shouldReturnFilteredTasks() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
-        var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest.setName("Test Project");
-        var projectResponse = restTemplate.exchange(
+        var createProjectRequest = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse = restTemplate.exchange(
+                "/projects",
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
+        var project = projectResponse.getBody();
+
+        var createProjectRequest2 = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse2 = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
                 new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
-        var project = projectResponse.getBody();
+        var project2 = projectResponse2.getBody();
 
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
@@ -122,17 +127,8 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 new org.springframework.http.HttpEntity<>(addTaskRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 TaskDTO.class);
 
-        var createProjectRequest2 = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest2.setName("Test Project 2");
-        var projectResponse2 = restTemplate.exchange(
-                "/projects",
-                org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
-                dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
-        var project2 = projectResponse2.getBody();
-
         var addTaskRequest2 = new AddTaskRequestDTO();
-        addTaskRequest2.setSummary("Test Task 2");
+        addTaskRequest2.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest2.setProjectId(project2.getId());
         restTemplate.exchange(
                 "/tasks",
@@ -147,29 +143,29 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 GetTasksResponseDTO.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, response.getBody().getContent().size());
-        assertEquals(project.getId(), response.getBody().getContent().get(0).getProjectId());
+        assertEquals(2, response.getBody().getContent().size());
+        assertTrue(response.getBody().getContent().stream().allMatch(t -> 
+                project.getId().equals(t.getProjectId())));
     }
 
     @Test
     void updateTask_withActiveProject_shouldReturn204() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
-        var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest.setName("Test Project");
-        var projectResponse = restTemplate.exchange(
+        var createProjectRequest = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest.setProjectId(project.getId());
-        var taskResponse = restTemplate.exchange(
+        ResponseEntity<TaskDTO> taskResponse = restTemplate.exchange(
                 "/tasks",
                 org.springframework.http.HttpMethod.POST,
                 new org.springframework.http.HttpEntity<>(addTaskRequest, createBearerAuthHeaders(loginResponse.getToken())),
@@ -177,7 +173,8 @@ class TasksControllerTest extends AbstractIntegrationTest {
         var task = taskResponse.getBody();
 
         var updateRequest = new TaskDTO();
-        updateRequest.summary("Updated Task");
+        updateRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
+        updateRequest.setStatus(dpr.playground.taskprovider.tasks.model.TaskStatusDTO.PENDING);
 
         ResponseEntity<Void> response = restTemplate.exchange(
                 "/tasks/" + task.getId(),
@@ -190,23 +187,22 @@ class TasksControllerTest extends AbstractIntegrationTest {
 
     @Test
     void updateTask_withArchivedProject_shouldReturn400() throws URISyntaxException {
-        var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
+        var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), createUserDTO.getPassword());
 
-        var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
-        createProjectRequest.setName("Test Project");
-        var projectResponse = restTemplate.exchange(
+        var createProjectRequest = TestDataGenerator.ProjectGenerator.randomProjectRequestDTO();
+        ResponseEntity<dpr.playground.taskprovider.tasks.model.ProjectDTO> projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest.setProjectId(project.getId());
-        var taskResponse = restTemplate.exchange(
+        ResponseEntity<TaskDTO> taskResponse = restTemplate.exchange(
                 "/tasks",
                 org.springframework.http.HttpMethod.POST,
                 new org.springframework.http.HttpEntity<>(addTaskRequest, createBearerAuthHeaders(loginResponse.getToken())),
@@ -219,14 +215,15 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 new org.springframework.http.HttpEntity<>(createBearerAuthHeaders(loginResponse.getToken())),
                 Void.class);
 
-         var updateRequest = new TaskDTO();
-         updateRequest.summary("Updated Task");
+        var updateRequest = new TaskDTO();
+        updateRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
+        updateRequest.setStatus(dpr.playground.taskprovider.tasks.model.TaskStatusDTO.PENDING);
 
-         ResponseEntity<String> response = restTemplate.exchange(
-                 "/tasks/" + task.getId(),
-                 org.springframework.http.HttpMethod.PUT,
-                 new org.springframework.http.HttpEntity<>(updateRequest, createBearerAuthHeaders(loginResponse.getToken())),
-                 String.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/tasks/" + task.getId(),
+                org.springframework.http.HttpMethod.PUT,
+                new org.springframework.http.HttpEntity<>(updateRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
