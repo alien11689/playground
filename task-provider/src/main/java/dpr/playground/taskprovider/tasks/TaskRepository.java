@@ -6,7 +6,9 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
     Task save(Task task);
@@ -19,4 +21,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("SELECT t FROM Task t WHERE (:projectId IS NULL OR t.project.id = :projectId)")
     Page<Task> findByProjectId(UUID projectId, Pageable pageable);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Task t SET t.status = 'REJECTED' WHERE t.project.id = :projectId AND t.status IN ('NEW', 'PENDING')")
+    void rejectUnfinishedTasks(UUID projectId);
 }

@@ -49,20 +49,11 @@ class TasksController implements TasksApi {
     public ResponseEntity<TaskDTO> addTask(AddTaskRequestDTO addTaskRequest) {
         var currentUser = getCurrentUser();
 
-        UUID projectId = null;
-        try {
-            java.lang.reflect.Method getProjectIdMethod = addTaskRequest.getClass().getMethod("getProjectId");
-            Object result = getProjectIdMethod.invoke(addTaskRequest);
-            projectId = (UUID) result;
-        } catch (Exception e) {
-            projectId = null;
-        }
-
         var command = new CreateTaskCommand(
                 addTaskRequest.getSummary(),
                 addTaskRequest.getDescription(),
                 currentUser.getId(),
-                projectId);
+                addTaskRequest.getProjectId());
         var task = taskService.createTask(command);
         return new ResponseEntity<>(taskMapper.toDtoWithAssignee(task), HttpStatus.CREATED);
     }
@@ -102,9 +93,9 @@ class TasksController implements TasksApi {
     }
 
     @Override
-    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size) {
+    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size, UUID projectId) {
         var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
-        var tasksPage = taskRepository.findAll(pageable);
+        var tasksPage = taskRepository.findByProjectId(projectId, pageable);
         return ResponseEntity.ok(taskMapper.toGetTasksResponse(tasksPage));
     }
 

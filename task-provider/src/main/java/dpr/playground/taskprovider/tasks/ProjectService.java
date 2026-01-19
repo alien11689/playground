@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProjectService {
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
     private final Clock clock;
 
     public Project createProject(String name, String description) {
@@ -45,6 +46,10 @@ public class ProjectService {
         var project = projectRepository.findById(id);
         if (project.isEmpty()) {
             return Optional.empty();
+        }
+
+        if (rejectUnfinishedTasks) {
+            taskRepository.rejectUnfinishedTasks(id);
         }
 
         project.get().archive(clock);
