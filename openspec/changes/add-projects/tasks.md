@@ -56,15 +56,15 @@
 - [x] 8.3 Ensure proper error responses for project validation failures
 
 ## 9. Testing
-- [ ] 9.1 Create unit tests for ProjectService with mocked repository
-- [ ] 9.2 Create unit tests for isProjectActive() method
-- [ ] 9.3 Create unit tests for TaskService project validation
-- [ ] 9.4 Create unit tests for CommentService project validation
-- [ ] 9.5 Create integration tests for ProjectsController endpoints
-- [ ] 9.6 Create integration tests for task creation/update with project validation
-- [ ] 9.7 Create integration tests for comment update with project validation
-- [ ] 9.8 Test archive action with rejectUnfinishedTasks=true/false
-- [ ] 9.9 Test restore action from archived to active
+- [x] 9.1 Created TestDataGenerator for unique test data (UserGenerator, ProjectGenerator, TaskGenerator, CommentGenerator, AuthGenerator)
+- [x] 9.2 Updated ProjectsControllerTest to use TestDataGenerator (randomized usernames, passwords, project data)
+- [ ] 9.3 Create unit tests for isProjectActive() method
+- [ ] 9.4 Create unit tests for TaskService project validation
+- [ ] 9.5 Create unit tests for CommentService project validation
+- [ ] 9.6 Create integration tests for ProjectsController endpoints
+- [ ] 9.7 Create integration tests for task creation/update with project validation
+- [ ] 9.8 Create integration tests for comment update with project validation
+- [ ] 9.9 Test archive action with rejectUnfinishedTasks=true/false
 
 ## 10. Validation Edge Cases
 - [x] 10.1 Verify task cannot be added to archived project

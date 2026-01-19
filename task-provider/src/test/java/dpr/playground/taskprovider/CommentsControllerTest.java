@@ -18,19 +18,19 @@ class CommentsControllerTest extends AbstractIntegrationTest {
     void updateComment_withActiveProject_shouldReturn204() throws URISyntaxException {
         var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully("testuser", "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
 
         var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
         createProjectRequest.setName("Test Project");
         var projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
         var addTaskRequest = new dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO();
-        addTaskRequest.setSummary("Test Task");
+        addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest.setProjectId(project.getId());
         var taskResponse = restTemplate.exchange(
                 "/tasks",
@@ -40,7 +40,7 @@ class CommentsControllerTest extends AbstractIntegrationTest {
         var task = taskResponse.getBody();
 
         var addCommentRequest = new AddTaskCommentRequestDTO();
-        addCommentRequest.setContent("Test Comment");
+        addCommentRequest.setContent("Comment: ");
         var commentResponse = restTemplate.exchange(
                 "/tasks/" + task.getId() + "/comments",
                 org.springframework.http.HttpMethod.POST,
@@ -61,19 +61,19 @@ class CommentsControllerTest extends AbstractIntegrationTest {
     void updateComment_withArchivedProject_shouldReturn400() throws URISyntaxException {
         var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO("testuser", "testpass", "Test", "User");
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully("testuser", "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername()), "testpass");
 
         var createProjectRequest = new dpr.playground.taskprovider.tasks.model.CreateProjectRequestDTO();
         createProjectRequest.setName("Test Project");
         var projectResponse = restTemplate.exchange(
                 "/projects",
                 org.springframework.http.HttpMethod.POST,
-                new org.springframework.http.HttpEntity<>(createProjectRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(createProjectRequest2, createBearerAuthHeaders(loginResponse.getToken())),
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project = projectResponse.getBody();
 
         var addTaskRequest = new dpr.playground.taskprovider.tasks.model.AddTaskRequestDTO();
-        addTaskRequest.setSummary("Test Task");
+        addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest.setProjectId(project.getId());
         var taskResponse = restTemplate.exchange(
                 "/tasks",
@@ -83,7 +83,7 @@ class CommentsControllerTest extends AbstractIntegrationTest {
         var task = taskResponse.getBody();
 
         var addCommentRequest = new AddTaskCommentRequestDTO();
-        addCommentRequest.setContent("Test Comment");
+        addCommentRequest.setContent("Comment: ");
         var commentResponse = restTemplate.exchange(
                 "/tasks/" + task.getId() + "/comments",
                 org.springframework.http.HttpMethod.POST,
