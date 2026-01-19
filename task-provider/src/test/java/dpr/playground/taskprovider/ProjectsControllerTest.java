@@ -15,13 +15,13 @@ import dpr.playground.taskprovider.tasks.model.UpdateProjectRequestDTO;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ProjectsApiTest extends AbstractIntegrationTest {
+class ProjectsControllerTest extends AbstractIntegrationTest {
     @Test
     void createProject_shouldReturn201WithValidData() throws URISyntaxException {
         var username = "testuser" + java.util.UUID.randomUUID().toString().substring(0, 8);
         var createUserDTO = new dpr.playground.taskprovider.tasks.model.CreateUserDTO(username, "testpass", "Test", "User");
         var user = createUserSuccessfully(createUserDTO);
-        var loginResponse = loginSuccessfully(username, "testpass");
+        var loginResponse = loginSuccessfully(createUserDTO.getUsername(), "testpass");
 
         var createProjectRequest = new CreateProjectRequestDTO();
         createProjectRequest.setName("Test Project");
