@@ -39,7 +39,9 @@ public class Project {
         var project = new Project();
         project.setId(UUID.randomUUID());
         project.setName(name);
-        ProjectStatus.ACTIVE.toString();
+        project.setStatus(ProjectStatus.ACTIVE);
+        project.setCreatedAt(now);
+        project.setUpdatedAt(now);
         return project;
     }
 
