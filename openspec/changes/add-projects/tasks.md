@@ -58,18 +58,19 @@
 ## 9. Testing
 - [x] 9.1 Created TestDataGenerator for unique test data (UserGenerator, ProjectGenerator, TaskGenerator, CommentGenerator, AuthGenerator)
 - [x] 9.2 Updated ProjectsControllerTest to use TestDataGenerator (randomized usernames, passwords, project data)
-- [ ] 9.3 Create unit tests for isProjectActive() method
-- [ ] 9.4 Create unit tests for TaskService project validation
-- [ ] 9.5 Create unit tests for CommentService project validation
-- [ ] 9.6 Create integration tests for ProjectsController endpoints
-- [ ] 9.7 Create integration tests for task creation/update with project validation
-- [ ] 9.8 Create integration tests for comment update with project validation
-- [ ] 9.9 Test archive action with rejectUnfinishedTasks=true/false
+- [x] 9.3 Created integration tests for ProjectsController endpoints (12 tests)
+- [x] 9.4 Created integration tests for TasksController with project validation (6 tests)
+- [x] 9.5 Created integration tests for CommentsController with project validation (2 tests)
+- [ ] 9.6 Create unit tests for ProjectService with mocked repository
+- [ ] 9.7 Create unit tests for isProjectActive() method
+- [ ] 9.8 Create unit tests for TaskService project validation
+- [ ] 9.9 Create unit tests for CommentService project validation
+- [ ] 9.10 Create acceptance tests with REST Assured in /acceptance directory
 
 ## 10. Validation Edge Cases
 - [x] 10.1 Verify task cannot be added to archived project
 - [x] 10.2 Verify task cannot be updated when project is archived
-- [x] 10.3 Verify comment cannot be updated when project is updated when project is archived
+- [x] 10.3 Verify comment cannot be updated when project is archived
 - [x] 10.4 Verify archive works regardless of task statuses
 - [x] 10.5 Verify archive with rejectUnfinishedTasks marks appropriate tasks as REJECTED
 - [x] 10.6 Verify restore allows task/comment modifications again
@@ -93,26 +94,26 @@
 - GlobalExceptionHandler: Added handlers for ProjectNotFoundException (404) and ProjectArchivedException (400)
 - Exception classes: ProjectNotFoundException and ProjectArchivedException created
 - Database migration V0004: Added project table and project_id foreign key
-- Test files created: ProjectsControllerTest, TasksControllerTest, CommentsControllerTest
+- Test data utilities: TestDataGenerator with unique data generation (UserGenerator, ProjectGenerator, TaskGenerator, CommentGenerator, AuthGenerator)
+- ProjectsControllerTest: 12 integration tests (12/12 passing)
+- TasksControllerTest: 6 integration tests (6/6 passing)
+- CommentsControllerTest: 2 integration tests (2/2 passing)
 - TasksController: Updated to accept projectId parameter
 
-### ❌ Known Issues with Test Implementation:
-- Test isolation problem: Each @SpringBootTest class creates its own database context, preventing data sharing between tests
-- Username conflicts: Tests use same username causing user creation conflicts (409 CONFLICT)
-- Authentication complexity: Tests struggle with Bearer token setup, leading to 401 errors
-- Complex debugging: Hard to identify root cause of test failures due to multiple contexts and concurrent test execution
-- Test file naming: Created test files named ProjectsControllerTest.java but class was ProjectsApiTest (mismatch)
-- Integration tests require significant refactoring to work properly with shared database context and unique test data
+### ❌ Remaining Issues:
+- TaskProviderApplicationTests: 18/30 tests failing due to missing projectId in legacy tests
+- Old tests in TaskProviderApplicationTests create tasks without projectId, causing 400 BAD_REQUEST
+- Missing unit tests for services (ProjectService, TaskService, CommentService)
 
-### 🎯 Recommendation:
-Implementing proper integration tests requires:
-1. Using @TestInstance.Lifecycle.PER_CLASS to ensure isolated database contexts
-2. Creating shared setup test that initializes common test data (projects, users)
-3. Implementing test cleanup and rollback mechanisms
-4. Fixing CreateUserDTO constructor to use unique identifiers instead of hardcoded values
-5. Separating test concerns from business logic
+### 🎯 Recommendations:
 
-**Note:** Current test implementations provide test structure and coverage but fail due to infrastructure limitations (context isolation, authentication setup). The production code itself is complete and functional.
+**Next Steps:**
+1. Update TaskProviderApplicationTests to use TestDataGenerator and include projectId when creating tasks
+2. Create unit tests for ProjectService, TaskService, CommentService using Mockito
+3. Optional: Create acceptance tests in /acceptance directory using REST Assured for cleaner API testing
+4. Optional: Add test cleanup and rollback mechanisms to ensure test isolation
+
+**Note:** New integration tests (ProjectsControllerTest, TasksControllerTest, CommentsControllerTest) are complete and passing. Production code is fully functional and implements all requirements from the proposal.
 
 ## Summary
 
