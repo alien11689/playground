@@ -2,6 +2,7 @@ package dpr.playground.taskprovider;
 
 import java.net.URISyntaxException;
 
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProjectsControllerTest extends AbstractIntegrationTest {
     @Test
+    @Order(1)
+    void cleanupDatabase() {
+        cleanupAllDatabaseTables();
+    }
+
+    @Test
+    @Order(2)
     void createProject_shouldReturn201WithValidData() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -39,6 +47,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(3)
     void createProject_shouldReturn400WithoutName() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -57,6 +66,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(4)
     void getProject_shouldReturn200ForExistingProject() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -82,6 +92,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(5)
     void getProject_shouldReturn404ForNonExistentProject() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -97,6 +108,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(6)
     void getProjects_shouldReturn200WithPagination() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -122,6 +134,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(7)
     void updateProject_shouldReturn204ForValidUpdate() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -149,6 +162,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(8)
     void updateProject_shouldReturn404ForNonExistentProject() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -167,6 +181,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(9)
     void archiveProject_shouldReturn204() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -190,6 +205,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(10)
     void archiveProject_withRejectUnfinishedTasksTrue_shouldRejectTasks() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -232,6 +248,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(11)
     void archiveProject_withRejectUnfinishedTasksFalse_shouldNotRejectTasks() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -274,6 +291,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(12)
     void restoreProject_shouldReturn204() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -303,6 +321,7 @@ class ProjectsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(13)
     void archiveProject_shouldReturn404ForNonExistentProject() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);

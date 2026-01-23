@@ -2,6 +2,7 @@ package dpr.playground.taskprovider;
 
 import java.net.URISyntaxException;
 
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CommentsControllerTest extends AbstractIntegrationTest {
     @Test
+    @Order(1)
+    void cleanupDatabase() {
+        cleanupAllDatabaseTables();
+    }
+
+    @Test
+    @Order(2)
     void updateComment_withActiveProject_shouldReturn204() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
@@ -65,6 +73,7 @@ class CommentsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Order(3)
     void updateComment_withArchivedProject_shouldReturn400() throws URISyntaxException {
         var createUserDTO = TestDataGenerator.UserGenerator.randomUserDTO();
         var user = createUserSuccessfully(createUserDTO);
