@@ -50,12 +50,16 @@ public class Task {
     @Column(name = "assigned_to")
     private UUID assignee;
 
+    @With
+    @Column(name = "project_id")
+    private UUID projectId;
+
     @ManyToOne
     @JoinColumn(name = "project_id", insertable = false, updatable = false)
     private Project project;
 
     public UUID getProjectId() {
-        return project != null ? project.getId() : null;
+        return projectId;
     }
 
     public static Task create(CreateTaskCommand command, Clock clock) {
@@ -70,6 +74,7 @@ public class Task {
                 command.createdBy(),
                 TaskStatusDTO.NEW,
                 null,
+                command.projectId(),
                 null);
     }
 
@@ -87,7 +92,7 @@ public class Task {
         this.updatedBy = updatedBy;
     }
 
-    private Task(UUID id, String summary, String description, OffsetDateTime createdAt, UUID createdBy, OffsetDateTime updatedAt, UUID updatedBy, TaskStatusDTO status, UUID assignee, Project project) {
+    private Task(UUID id, String summary, String description, OffsetDateTime createdAt, UUID createdBy, OffsetDateTime updatedAt, UUID updatedBy, TaskStatusDTO status, UUID assignee, UUID projectId, Project project) {
         this.id = id;
         this.summary = summary;
         this.description = description;
@@ -97,6 +102,7 @@ public class Task {
         this.updatedBy = updatedBy;
         this.status = status;
         this.assignee = assignee;
+        this.projectId = projectId;
         this.project = project;
     }
 }

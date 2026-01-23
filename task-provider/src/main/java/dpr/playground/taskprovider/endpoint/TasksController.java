@@ -62,7 +62,7 @@ class TasksController implements TasksApi {
     public ResponseEntity<CommentDTO> addTaskComment(UUID taskId, AddTaskCommentRequestDTO addTaskCommentRequest) {
         var currentUser = getCurrentUser();
         var comment = commentService.createComment(taskId, addTaskCommentRequest.getContent(), currentUser.getId());
-        return new ResponseEntity<>(commentMapper.toDto(comment), HttpStatus.CREATED);
+        return new ResponseEntity<>(commentMapper.toDto(comment), HttpStatus.OK);
     }
 
     @Override
@@ -87,6 +87,10 @@ class TasksController implements TasksApi {
 
     @Override
     public ResponseEntity<GetTaskCommentsResponseDTO> getTaskComments(UUID taskId, Integer page, Integer size) {
+        var task = taskRepository.findById(taskId);
+        if (task.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
         var commentsPage = commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId, pageable);
         return ResponseEntity.ok(commentMapper.toGetTaskCommentsResponse(commentsPage));

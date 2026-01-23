@@ -118,6 +118,7 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 dpr.playground.taskprovider.tasks.model.ProjectDTO.class);
         var project2 = projectResponse2.getBody();
 
+        // Create first task for project1
         var addTaskRequest = new AddTaskRequestDTO();
         addTaskRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest.setProjectId(project.getId());
@@ -127,6 +128,17 @@ class TasksControllerTest extends AbstractIntegrationTest {
                 new org.springframework.http.HttpEntity<>(addTaskRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 TaskDTO.class);
 
+        // Create second task for project1
+        var addTaskRequest1b = new AddTaskRequestDTO();
+        addTaskRequest1b.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
+        addTaskRequest1b.setProjectId(project.getId());
+        restTemplate.exchange(
+                "/tasks",
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(addTaskRequest1b, createBearerAuthHeaders(loginResponse.getToken())),
+                TaskDTO.class);
+
+        // Create task for project2
         var addTaskRequest2 = new AddTaskRequestDTO();
         addTaskRequest2.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         addTaskRequest2.setProjectId(project2.getId());
@@ -175,6 +187,7 @@ class TasksControllerTest extends AbstractIntegrationTest {
         var updateRequest = new TaskDTO();
         updateRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         updateRequest.setStatus(dpr.playground.taskprovider.tasks.model.TaskStatusDTO.PENDING);
+        updateRequest.setProjectId(project.getId());
 
         ResponseEntity<Void> response = restTemplate.exchange(
                 "/tasks/" + task.getId(),
@@ -218,6 +231,7 @@ class TasksControllerTest extends AbstractIntegrationTest {
         var updateRequest = new TaskDTO();
         updateRequest.setSummary(TestDataGenerator.TaskGenerator.randomTaskSummary());
         updateRequest.setStatus(dpr.playground.taskprovider.tasks.model.TaskStatusDTO.PENDING);
+        updateRequest.setProjectId(project.getId());
 
         ResponseEntity<String> response = restTemplate.exchange(
                 "/tasks/" + task.getId(),

@@ -42,10 +42,23 @@ class CommentsControllerTest extends AbstractIntegrationTest {
                 TaskDTO.class);
         var task = taskResponse.getBody();
 
+        // First, create a comment
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent(TestDataGenerator.CommentGenerator.randomCommentContent());
+        ResponseEntity<CommentDTO> commentResponse = restTemplate.exchange(
+                "/tasks/" + task.getId() + "/comments",
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(addCommentRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                CommentDTO.class);
+        var comment = commentResponse.getBody();
+
+        // Then update the comment
+        var updateCommentRequest = new CommentDTO();
+        updateCommentRequest.setContent(TestDataGenerator.CommentGenerator.randomCommentContent());
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/tasks/" + task.getId() + "/comments/" + task.getId(),
+                "/tasks/" + task.getId() + "/comments/" + comment.getId(),
                 org.springframework.http.HttpMethod.PUT,
-                new org.springframework.http.HttpEntity<>(TestDataGenerator.CommentGenerator.randomCommentRequestDTO(), createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(updateCommentRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 Void.class);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
@@ -76,19 +89,31 @@ class CommentsControllerTest extends AbstractIntegrationTest {
                 TaskDTO.class);
         var task = taskResponse.getBody();
 
+        // First, create a comment
+        var addCommentRequest = new AddTaskCommentRequestDTO();
+        addCommentRequest.setContent(TestDataGenerator.CommentGenerator.randomCommentContent());
+        ResponseEntity<CommentDTO> commentResponse = restTemplate.exchange(
+                "/tasks/" + task.getId() + "/comments",
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(addCommentRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                CommentDTO.class);
+        var comment = commentResponse.getBody();
+
+        // Archive the project
         restTemplate.exchange(
                 "/projects/" + project.getId() + "?action=archive",
                 org.springframework.http.HttpMethod.POST,
                 new org.springframework.http.HttpEntity<>(createBearerAuthHeaders(loginResponse.getToken())),
                 Void.class);
 
-        var updateRequest = new CommentDTO();
-        updateRequest.setContent(TestDataGenerator.CommentGenerator.randomCommentContent());
+        // Try to update the comment - should fail because project is archived
+        var updateCommentRequest = new CommentDTO();
+        updateCommentRequest.setContent(TestDataGenerator.CommentGenerator.randomCommentContent());
 
         ResponseEntity<String> response = restTemplate.exchange(
-                "/tasks/" + task.getId() + "/comments/" + task.getId(),
+                "/tasks/" + task.getId() + "/comments/" + comment.getId(),
                 org.springframework.http.HttpMethod.PUT,
-                new org.springframework.http.HttpEntity<>(updateRequest, createBearerAuthHeaders(loginResponse.getToken())),
+                new org.springframework.http.HttpEntity<>(updateCommentRequest, createBearerAuthHeaders(loginResponse.getToken())),
                 String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
