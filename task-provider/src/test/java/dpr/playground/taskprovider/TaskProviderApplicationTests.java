@@ -256,7 +256,7 @@ class TaskProviderApplicationTests extends AbstractIntegrationTest {
         addTaskRequest.setDescription("Test task description");
         addTaskRequest.setProjectId(projectId);
 
-        var response = restTemplate.exchange("/tasks", HttpMethod.POST, new HttpEntity<>(addTaskRequest, headers), TaskDTO.class);
+        var response = restTemplate.exchange("/tasks", HttpMethod.POST, new HttpEntity<>(addTaskRequest, createBearerAuthHeaders(loggedInUser.getToken())), TaskDTO.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("Test task summary", response.getBody().getSummary());
@@ -403,7 +403,7 @@ class TaskProviderApplicationTests extends AbstractIntegrationTest {
         var getCommentsResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.GET, new HttpEntity<>(headers), GetTaskCommentsResponseDTO.class);
         assertEquals(HttpStatus.OK, getCommentsResponse.getStatusCode());
         var comments = getCommentsResponse.getBody();
-        assertEquals(0, comments.size());
+        assertEquals(0, comments.getContent().size());
     }
 
     @Test
@@ -480,7 +480,7 @@ class TaskProviderApplicationTests extends AbstractIntegrationTest {
         var projectId = createProject();
         var taskId = createTaskWithProjectId(headers, "Task summary", "Task description", projectId);
 
-        ResponseEntity<String> createCommentResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(new AddTaskCommentRequestDTO(), headers), String.class);
+        ResponseEntity<CommentDTO> createCommentResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(new AddTaskCommentRequestDTO(), headers), CommentDTO.class);
         assertEquals(HttpStatus.OK, createCommentResponse.getStatusCode());
         assertNotNull(createCommentResponse.getBody());
 
@@ -495,7 +495,7 @@ class TaskProviderApplicationTests extends AbstractIntegrationTest {
         var projectId = createProject();
         var taskId = createTaskWithProjectId(headers, "Task summary", "Task description", projectId);
 
-        ResponseEntity<String> createCommentResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(new AddTaskCommentRequestDTO(), headers), String.class);
+        ResponseEntity<CommentDTO> createCommentResponse = restTemplate.exchange("/tasks/" + taskId + "/comments", HttpMethod.POST, new HttpEntity<>(new AddTaskCommentRequestDTO(), headers), CommentDTO.class);
         assertEquals(HttpStatus.OK, createCommentResponse.getStatusCode());
         assertNotNull(createCommentResponse.getBody());
 
