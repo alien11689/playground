@@ -19,6 +19,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import dpr.playground.taskprovider.tasks.model.CreateUserDTO;
 import dpr.playground.taskprovider.tasks.model.LoginResponseDTO;
 import dpr.playground.taskprovider.tasks.model.UserDTO;
+import dpr.playground.taskprovider.tasks.CommentRepository;
+import dpr.playground.taskprovider.tasks.ProjectRepository;
+import dpr.playground.taskprovider.tasks.TaskRepository;
+import dpr.playground.taskprovider.user.UserRepository;
+import dpr.playground.taskprovider.user.token.AccessTokenRepository;
 
 abstract class AbstractIntegrationTest {
 
@@ -39,6 +44,34 @@ abstract class AbstractIntegrationTest {
 
     @Autowired
     protected TestRestTemplate restTemplate;
+
+    @Autowired
+    protected CommentRepository commentRepository;
+
+    @Autowired
+    protected AccessTokenRepository accessTokenRepository;
+
+    @Autowired
+    protected TaskRepository taskRepository;
+
+    @Autowired
+    protected ProjectRepository projectRepository;
+
+    @Autowired
+    protected UserRepository userRepository;
+
+    /**
+     * Cleanup all data from the database to ensure test isolation.
+     * Called as the first test in each integration test class using @Order(1).
+     */
+    protected void cleanupAllDatabaseTables() {
+        // Delete in reverse order of foreign key dependencies
+        commentRepository.deleteAll();
+        accessTokenRepository.deleteAll();
+        taskRepository.deleteAll();
+        projectRepository.deleteAll();
+        userRepository.deleteAll();
+    }
 
     protected UserDTO createUserSuccessfully(CreateUserDTO createUserDTO) throws URISyntaxException {
         ResponseEntity<UserDTO> createUserResponse = createUser(createUserDTO, UserDTO.class);
