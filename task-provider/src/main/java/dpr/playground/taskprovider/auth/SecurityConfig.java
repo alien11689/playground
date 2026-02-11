@@ -33,7 +33,7 @@ class SecurityConfig {
                         expressionInterceptUrlRegistry
                                 .requestMatchers("/", "/index.html", "/assets/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                                .requestMatchers("/login").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/login").authenticated()
                                 .anyRequest().authenticated())
                 .httpBasic(httpSecurityHttpBasicConfigurer ->
                         httpSecurityHttpBasicConfigurer.authenticationEntryPoint(entryPoint))

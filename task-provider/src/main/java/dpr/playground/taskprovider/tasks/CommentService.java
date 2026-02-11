@@ -8,17 +8,15 @@ import org.springframework.stereotype.Service;
 
 import dpr.playground.taskprovider.tasks.model.TaskStatusDTO;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
+    private final ProjectService projectService;
     private final Clock clock;
-
-    CommentService(CommentRepository commentRepository, TaskRepository taskRepository, Clock clock) {
-        this.commentRepository = commentRepository;
-        this.taskRepository = taskRepository;
-        this.clock = clock;
-    }
 
     public Comment createComment(UUID taskId, String content, UUID createdBy) {
         var task = taskRepository.findById(taskId);
@@ -40,6 +38,12 @@ public class CommentService {
         if (!comment.get().getCreatedBy().equals(userId)) {
             throw new NotCommentAuthorException("Only comment author can update comment");
         }
+
+        var task = taskRepository.findById(comment.get().getTaskId());
+        if (task.isPresent()) {
+            projectService.isProjectActive(task.get().getProjectId());
+        }
+
         comment.get().update(content, clock);
         return Optional.of(commentRepository.save(comment.get()));
     }
