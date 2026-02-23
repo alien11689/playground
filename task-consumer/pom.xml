@@ -17,7 +17,7 @@
         <beanvalidation-version>2.0.2</beanvalidation-version>
         <httpclient-version>5.6</httpclient-version>
         <jackson-databind-nullable-version>0.2.9</jackson-databind-nullable-version>
-        <jackson-version>2.21.0</jackson-version>
+        <jackson-version>2.21.1</jackson-version>
         <jackson-annotations-version>2.21</jackson-annotations-version>
         <jakarta-annotation-version>3.0.0</jakarta-annotation-version>
         <jsr305.version>3.0.2</jsr305.version>
