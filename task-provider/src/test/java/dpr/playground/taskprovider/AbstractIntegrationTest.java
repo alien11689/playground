@@ -2,11 +2,10 @@ package dpr.playground.taskprovider;
 
 import java.net.URISyntaxException;
 import java.util.Base64;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
