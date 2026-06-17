@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import dpr.playground.taskprovider.tasks.NotCommentAuthorException;
+import dpr.playground.taskprovider.tasks.ProjectArchivedException;
+import dpr.playground.taskprovider.tasks.ProjectNotFoundException;
 import dpr.playground.taskprovider.tasks.model.ErrorDTO;
 
 @ControllerAdvice
@@ -47,6 +49,18 @@ class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<ErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    ResponseEntity<ErrorDTO> handleProjectNotFoundException(ProjectNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ProjectArchivedException.class)
+    ResponseEntity<ErrorDTO> handleProjectArchivedException(ProjectArchivedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorDTO(ex.getMessage()));
     }
 }
