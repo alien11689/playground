@@ -26,7 +26,7 @@
     "eslint": "^10.5.0",
     "eslint-plugin-react-dom": "^5.9.2",
     "eslint-plugin-react-refresh": "^0.5.3",
-    "eslint-plugin-react-x": "^5.9.2",
+    "eslint-plugin-react-x": "^5.9.3",
     "globals": "^17.7.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.62.0",
