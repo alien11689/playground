@@ -24,7 +24,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^10.7.0",
-    "eslint-plugin-react-dom": "^5.14.6",
+    "eslint-plugin-react-dom": "^5.14.8",
     "eslint-plugin-react-refresh": "^0.5.3",
     "eslint-plugin-react-x": "^5.14.6",
     "globals": "^17.7.0",
