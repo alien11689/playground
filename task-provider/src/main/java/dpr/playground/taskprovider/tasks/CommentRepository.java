@@ -15,4 +15,6 @@ public interface CommentRepository extends Repository<Comment, UUID> {
     Page<Comment> findByTaskIdOrderByCreatedAtDesc(UUID taskId, Pageable pageable);
 
     void deleteById(UUID id);
+
+    void deleteAll();
 }

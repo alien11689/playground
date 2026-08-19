@@ -11,7 +11,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
@@ -47,6 +50,18 @@ public class Task {
     @Column(name = "assigned_to")
     private UUID assignee;
 
+    @With
+    @Column(name = "project_id")
+    private UUID projectId;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id", insertable = false, updatable = false)
+    private Project project;
+
+    public UUID getProjectId() {
+        return projectId;
+    }
+
     public static Task create(CreateTaskCommand command, Clock clock) {
         var now = OffsetDateTime.now(clock);
         return new Task(
@@ -58,6 +73,8 @@ public class Task {
                 now,
                 command.createdBy(),
                 TaskStatusDTO.NEW,
+                null,
+                command.projectId(),
                 null);
     }
 
@@ -75,7 +92,7 @@ public class Task {
         this.updatedBy = updatedBy;
     }
 
-    private Task(UUID id, String summary, String description, OffsetDateTime createdAt, UUID createdBy, OffsetDateTime updatedAt, UUID updatedBy, TaskStatusDTO status, UUID assignee) {
+    private Task(UUID id, String summary, String description, OffsetDateTime createdAt, UUID createdBy, OffsetDateTime updatedAt, UUID updatedBy, TaskStatusDTO status, UUID assignee, UUID projectId, Project project) {
         this.id = id;
         this.summary = summary;
         this.description = description;
@@ -85,5 +102,7 @@ public class Task {
         this.updatedBy = updatedBy;
         this.status = status;
         this.assignee = assignee;
+        this.projectId = projectId;
+        this.project = project;
     }
 }

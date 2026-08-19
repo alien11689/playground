@@ -1,5 +1,6 @@
 package dpr.playground.taskprovider.endpoint;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,10 +28,11 @@ import dpr.playground.taskprovider.tasks.CommentRepository;
 import dpr.playground.taskprovider.tasks.CommentMapper;
 import dpr.playground.taskprovider.tasks.CreateTaskCommand;
 import dpr.playground.taskprovider.tasks.UpdateTaskCommand;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 class TasksController implements TasksApi {
     private final TaskService taskService;
     private final TaskRepository taskRepository;
@@ -46,10 +48,12 @@ class TasksController implements TasksApi {
     @Override
     public ResponseEntity<TaskDTO> addTask(AddTaskRequestDTO addTaskRequest) {
         var currentUser = getCurrentUser();
+
         var command = new CreateTaskCommand(
                 addTaskRequest.getSummary(),
                 addTaskRequest.getDescription(),
-                currentUser.getId());
+                currentUser.getId(),
+                addTaskRequest.getProjectId());
         var task = taskService.createTask(command);
         return new ResponseEntity<>(taskMapper.toDtoWithAssignee(task), HttpStatus.CREATED);
     }
@@ -58,7 +62,7 @@ class TasksController implements TasksApi {
     public ResponseEntity<CommentDTO> addTaskComment(UUID taskId, AddTaskCommentRequestDTO addTaskCommentRequest) {
         var currentUser = getCurrentUser();
         var comment = commentService.createComment(taskId, addTaskCommentRequest.getContent(), currentUser.getId());
-        return new ResponseEntity<>(commentMapper.toDto(comment), HttpStatus.CREATED);
+        return new ResponseEntity<>(commentMapper.toDto(comment), HttpStatus.OK);
     }
 
     @Override
@@ -83,15 +87,19 @@ class TasksController implements TasksApi {
 
     @Override
     public ResponseEntity<GetTaskCommentsResponseDTO> getTaskComments(UUID taskId, Integer page, Integer size) {
+        var task = taskRepository.findById(taskId);
+        if (task.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
         var commentsPage = commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId, pageable);
         return ResponseEntity.ok(commentMapper.toGetTaskCommentsResponse(commentsPage));
     }
 
     @Override
-    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size) {
+    public ResponseEntity<GetTasksResponseDTO> getTasks(Integer page, Integer size, UUID projectId) {
         var pageable = PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
-        var tasksPage = taskRepository.findAll(pageable);
+        var tasksPage = taskRepository.findByProjectId(projectId, pageable);
         return ResponseEntity.ok(taskMapper.toGetTasksResponse(tasksPage));
     }
 
