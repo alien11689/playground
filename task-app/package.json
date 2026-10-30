@@ -29,7 +29,7 @@
     "eslint-plugin-react-x": "^5.28.8",
     "globals": "^17.13.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.0",
+    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5"
   }
 }
